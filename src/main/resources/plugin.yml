@@ -1,0 +1,7 @@
+name: Hunted
+version: '${version}'
+main: me.ayydan.hunted.HuntedPlugin
+api-version: '1.20'
+authors: [Ayydan]
+description: A Minecraft Manhunt plugin.
+website: https://github.com/Ayydxn/Hunted
