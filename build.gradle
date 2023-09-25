@@ -11,6 +11,7 @@ base {
 
 repositories {
     mavenCentral()
+
     maven {
         name = "papermc-repo"
         url = "https://repo.papermc.io/repository/maven-public/"
@@ -23,6 +24,8 @@ repositories {
 
 dependencies {
     compileOnly "io.papermc.paper:paper-api:${project.minecraft_version}-${project.paper_version}"
+
+    implementation "net.kyori:adventure-api:${project.adventure_version}"
 }
 
 def targetJavaVersion = 17
