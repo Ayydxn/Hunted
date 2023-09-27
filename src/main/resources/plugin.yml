@@ -5,3 +5,7 @@ api-version: '1.20'
 authors: [Ayydan]
 description: A Minecraft Manhunt plugin.
 website: https://github.com/Ayydxn/Hunted
+commands:
+  hunted:
+    description: The global command for all of Hunted's features.
+    usage: /<command>
