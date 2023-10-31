@@ -1,4 +1,4 @@
-package me.ayydan.hunted.commands.impl;
+package me.ayydan.hunted.commands;
 
 import me.ayydan.hunted.core.HuntedGameManager;
 import me.ayydan.hunted.core.HuntedGameState;

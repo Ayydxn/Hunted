@@ -1,8 +1,7 @@
 package me.ayydan.hunted.commands;
 
-import me.ayydan.hunted.commands.impl.StartManhuntCommand;
-import me.ayydan.hunted.commands.impl.StopManhuntCommand;
 import me.ayydan.hunted.core.HuntedGameManager;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -28,11 +27,14 @@ public class GlobalHuntedCommand implements CommandExecutor
 
             if (args[0].equalsIgnoreCase("stop"))
                 return new StopManhuntCommand(this.huntedGameManager).onCommand(sender, command, label, args);
+
+            if (args[0].equalsIgnoreCase("teams"))
+                return new TeamsCommand(this.huntedGameManager).onCommand(sender, command, label, args);
         }
         else
         {
             // TODO: (Ayydan) What the message being sent says.
-            sender.sendMessage(NamedTextColor.YELLOW + "Some sort of the documentation listing all of Hunted's commands should be here.");
+            sender.sendMessage(Component.text("Some sort of the documentation listing all of Hunted's commands should be here.", NamedTextColor.YELLOW));
         }
 
         return true;

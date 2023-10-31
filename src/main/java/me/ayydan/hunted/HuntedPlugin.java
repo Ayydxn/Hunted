@@ -1,6 +1,7 @@
 package me.ayydan.hunted;
 
 import me.ayydan.hunted.commands.GlobalHuntedCommand;
+import me.ayydan.hunted.commands.HuntedCommandTabCompleter;
 import me.ayydan.hunted.core.HuntedGameManager;
 import me.ayydan.hunted.utils.HuntedLogger;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -23,6 +24,7 @@ public final class HuntedPlugin extends JavaPlugin
         this.huntedGameManager = new HuntedGameManager();
 
         this.getCommand("hunted").setExecutor(new GlobalHuntedCommand(this.huntedGameManager));
+        this.getCommand("hunted").setTabCompleter(new HuntedCommandTabCompleter());
     }
 
     @Override
