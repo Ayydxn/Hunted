@@ -100,8 +100,6 @@ public class HuntedGameManager
     {
         Location worldSpawnLocation = Bukkit.getWorlds().get(0).getSpawnLocation();
 
-        ArrayList<ItemStack> participatingPlayerSkulls = new ArrayList<>();
-
         ArrayList<Player> participatingPlayers = new ArrayList<>();
         participatingPlayers.addAll(this.huntersTeam.getPlayers());
         participatingPlayers.addAll(this.survivorsTeam.getPlayers());
@@ -129,25 +127,6 @@ public class HuntedGameManager
                     worldSpawnLocation.getZ() + offsetZ);
 
             participatingPlayer.teleport(teleportLocation);
-
-            ItemStack playerHead = new ItemStack(Material.PLAYER_HEAD);
-
-            SkullMeta skullMeta = (SkullMeta) playerHead.getItemMeta();
-            skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(participatingPlayer.getUniqueId()));
-
-            playerHead.setItemMeta(skullMeta);
-
-            participatingPlayerSkulls.add(playerHead);
-        }
-
-        for (Player spectator : this.spectatorsTeam.getPlayers())
-        {
-            spectator.setGameMode(GameMode.SPECTATOR);
-
-            spectator.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
-
-            for (ItemStack participatingPlayerSkull : participatingPlayerSkulls)
-                spectator.getInventory().addItem(participatingPlayerSkull);
         }
     }
 
