@@ -97,9 +97,6 @@ public class HuntedGameManager
 
             survivorTrackingCompass.updateTrackingCompass(hunter);
         }
-
-        // TODO: (Ayydan) Remove this test code.
-        Bukkit.getServer().broadcast(Component.text("A match of Minecraft Manhunt has been updated!", NamedTextColor.GREEN));
     }
 
     public void endGame()

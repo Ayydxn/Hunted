@@ -3,6 +3,7 @@ package me.ayydan.hunted.item;
 import me.ayydan.hunted.HuntedPlugin;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
@@ -14,7 +15,8 @@ import java.util.ArrayList;
 
 public class SurvivorTrackingCompassItem
 {
-    public static final Component DISPLAY_NAME = Component.text("Survivor Tracking Compass", NamedTextColor.GOLD);
+    public static final Component DISPLAY_NAME = Component.text("Survivor Tracking Compass", NamedTextColor.GOLD)
+            .decorate(TextDecoration.BOLD);
 
     private final ItemStack survivorTrackingCompassItem;
     private CompassMeta survivorTrackingCompassMeta;
@@ -49,12 +51,8 @@ public class SurvivorTrackingCompassItem
             return;
         }
 
-        ArrayList<Component> survivorTrackingCompassLore = new ArrayList<>();
-        survivorTrackingCompassLore.add(Component.text(String.format("Player: %s", nearestSurvivor.displayName())));
-
         this.survivorTrackingCompassMeta = (CompassMeta) this.survivorTrackingCompassItem.getItemMeta();
         this.survivorTrackingCompassMeta.displayName(DISPLAY_NAME);
-        this.survivorTrackingCompassMeta.lore(survivorTrackingCompassLore);
         this.survivorTrackingCompassMeta.addItemFlags(ItemFlag.HIDE_ITEM_SPECIFICS);
 
         this.survivorTrackingCompassItem.setItemMeta(this.survivorTrackingCompassMeta);
@@ -83,7 +81,7 @@ public class SurvivorTrackingCompassItem
             heightDifferenceString = String.format("%d Blocks Below", Math.abs(heightDifference));
         }
 
-        return String.format("Player: %s | Distance: %d Blocks | Height: %s", nearestSurvivor.getName(), distanceDifference, heightDifferenceString);
+        return String.format("Nearest Player: %s | Distance: %d Blocks | Height: %s", nearestSurvivor.getName(), distanceDifference, heightDifferenceString);
     }
 
     public ItemStack getItemStack()
@@ -98,6 +96,9 @@ public class SurvivorTrackingCompassItem
 
         for (Player survivor : HuntedPlugin.getInstance().getGameManager().getSurvivorsTeam().getPlayers())
         {
+            if (survivor.getWorld().getEnvironment() != hunter.getWorld().getEnvironment())
+                break;
+
             if (survivor != hunter)
             {
                 double distanceBetweenThem = survivor.getLocation().distance(hunter.getLocation());
