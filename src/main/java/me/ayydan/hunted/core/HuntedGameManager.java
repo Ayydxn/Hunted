@@ -145,6 +145,9 @@ public class HuntedGameManager
 
             participatingPlayer.teleport(teleportLocation);
         }
+
+        for (Player spectator : this.spectatorsTeam.getPlayers())
+            spectator.setGameMode(GameMode.SPECTATOR);
     }
 
     private void giveHuntersSurvivorTrackers()

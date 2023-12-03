@@ -1,24 +1,21 @@
 package me.ayydan.hunted.item;
 
 import me.ayydan.hunted.HuntedPlugin;
-import net.kyori.adventure.audience.MessageType;
-import net.kyori.adventure.chat.ChatType;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
-import net.md_5.bungee.api.ChatMessageType;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.CompassMeta;
-import org.checkerframework.checker.units.qual.A;
 import org.joml.Math;
 
 import java.util.ArrayList;
 
 public class SurvivorTrackingCompassItem
 {
+    public static final Component DISPLAY_NAME = Component.text("Survivor Tracking Compass", NamedTextColor.GOLD);
+
     private final ItemStack survivorTrackingCompassItem;
     private CompassMeta survivorTrackingCompassMeta;
 
@@ -27,7 +24,7 @@ public class SurvivorTrackingCompassItem
         this.survivorTrackingCompassItem = new ItemStack(Material.COMPASS);
 
         this.survivorTrackingCompassMeta = (CompassMeta) this.survivorTrackingCompassItem.getItemMeta();
-        this.survivorTrackingCompassMeta.displayName(Component.text("Survivor Tracking Compass", NamedTextColor.GOLD));
+        this.survivorTrackingCompassMeta.displayName(DISPLAY_NAME);
         this.survivorTrackingCompassMeta.addItemFlags(ItemFlag.HIDE_ITEM_SPECIFICS);
 
         this.survivorTrackingCompassItem.setItemMeta(survivorTrackingCompassMeta);
@@ -47,13 +44,16 @@ public class SurvivorTrackingCompassItem
         Player nearestSurvivor = this.getNearestSurvivorToHunter(hunterUser);
 
         if (nearestSurvivor == null)
+        {
+            hunterUser.sendActionBar(Component.text("No survivors are nearby or at least one of them is too far away to be tracked!"));
             return;
+        }
 
         ArrayList<Component> survivorTrackingCompassLore = new ArrayList<>();
         survivorTrackingCompassLore.add(Component.text(String.format("Player: %s", nearestSurvivor.displayName())));
 
         this.survivorTrackingCompassMeta = (CompassMeta) this.survivorTrackingCompassItem.getItemMeta();
-        this.survivorTrackingCompassMeta.displayName(Component.text("Survivor Tracking Compass", NamedTextColor.GOLD));
+        this.survivorTrackingCompassMeta.displayName(DISPLAY_NAME);
         this.survivorTrackingCompassMeta.lore(survivorTrackingCompassLore);
         this.survivorTrackingCompassMeta.addItemFlags(ItemFlag.HIDE_ITEM_SPECIFICS);
 
