@@ -1,7 +1,10 @@
 package me.ayydan.hunted.teams;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.checkerframework.checker.units.qual.A;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -29,6 +32,16 @@ public abstract class HuntedTeam
     public boolean isPlayerInTeam(Player player)
     {
         return this.playersToUUIDMap.containsKey(player.getUniqueId());
+    }
+
+    public ArrayList<Player> getPlayers()
+    {
+        ArrayList<Player> players = new ArrayList<>();
+
+        for (UUID playerUUID : playersToUUIDMap.keySet())
+            players.add(Bukkit.getServer().getPlayer(playerUUID));
+
+        return players;
     }
 
     public String getTeamName()
