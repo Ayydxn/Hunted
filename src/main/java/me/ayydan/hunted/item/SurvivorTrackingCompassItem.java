@@ -1,0 +1,115 @@
+package me.ayydan.hunted.item;
+
+import me.ayydan.hunted.HuntedPlugin;
+import net.kyori.adventure.audience.MessageType;
+import net.kyori.adventure.chat.ChatType;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.md_5.bungee.api.ChatMessageType;
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemFlag;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.CompassMeta;
+import org.checkerframework.checker.units.qual.A;
+import org.joml.Math;
+
+import java.util.ArrayList;
+
+public class SurvivorTrackingCompassItem
+{
+    private final ItemStack survivorTrackingCompassItem;
+    private CompassMeta survivorTrackingCompassMeta;
+
+    public SurvivorTrackingCompassItem()
+    {
+        this.survivorTrackingCompassItem = new ItemStack(Material.COMPASS);
+
+        this.survivorTrackingCompassMeta = (CompassMeta) this.survivorTrackingCompassItem.getItemMeta();
+        this.survivorTrackingCompassMeta.displayName(Component.text("Survivor Tracking Compass", NamedTextColor.GOLD));
+        this.survivorTrackingCompassMeta.addItemFlags(ItemFlag.HIDE_ITEM_SPECIFICS);
+
+        this.survivorTrackingCompassItem.setItemMeta(survivorTrackingCompassMeta);
+    }
+
+    public void updateTrackingCompass(Player hunterUser)
+    {
+        if (hunterUser == null)
+            return;
+
+        boolean isUserASurvivor = HuntedPlugin.getInstance().getGameManager().getSurvivorsTeam().isPlayerInTeam(hunterUser);
+        boolean isUserASpectator = HuntedPlugin.getInstance().getGameManager().getSpectatorsTeam().isPlayerInTeam(hunterUser);
+
+        if (isUserASurvivor || isUserASpectator)
+            return;
+
+        Player nearestSurvivor = this.getNearestSurvivorToHunter(hunterUser);
+
+        if (nearestSurvivor == null)
+            return;
+
+        ArrayList<Component> survivorTrackingCompassLore = new ArrayList<>();
+        survivorTrackingCompassLore.add(Component.text(String.format("Player: %s", nearestSurvivor.displayName())));
+
+        this.survivorTrackingCompassMeta = (CompassMeta) this.survivorTrackingCompassItem.getItemMeta();
+        this.survivorTrackingCompassMeta.displayName(Component.text("Survivor Tracking Compass", NamedTextColor.GOLD));
+        this.survivorTrackingCompassMeta.lore(survivorTrackingCompassLore);
+        this.survivorTrackingCompassMeta.addItemFlags(ItemFlag.HIDE_ITEM_SPECIFICS);
+
+        this.survivorTrackingCompassItem.setItemMeta(this.survivorTrackingCompassMeta);
+
+        if (hunterUser.getInventory().getItemInMainHand().getType() == this.survivorTrackingCompassItem.getType())
+        {
+            int distanceDifference = (int) hunterUser.getLocation().distance(nearestSurvivor.getLocation());
+            String nearestPlayerInfo = this.getNearestSurvivorLocationInfo(hunterUser, nearestSurvivor, distanceDifference);
+
+            hunterUser.setCompassTarget(nearestSurvivor.getLocation());
+            hunterUser.sendActionBar(Component.text(nearestPlayerInfo));
+        }
+    }
+
+    private String getNearestSurvivorLocationInfo(Player hunterUser, Player nearestSurvivor, int distanceDifference)
+    {
+        int heightDifference = hunterUser.getLocation().getBlockY() - nearestSurvivor.getLocation().getBlockY();
+        String heightDifferenceString = "Same Height";
+
+        if (heightDifference > 0)
+        {
+            heightDifferenceString = String.format("%d Blocks Above", heightDifference);
+        }
+        else if (heightDifference < 0)
+        {
+            heightDifferenceString = String.format("%d Blocks Below", Math.abs(heightDifference));
+        }
+
+        return String.format("Player: %s | Distance: %d Blocks | Height: %s", nearestSurvivor.getName(), distanceDifference, heightDifferenceString);
+    }
+
+    public ItemStack getItemStack()
+    {
+        return this.survivorTrackingCompassItem;
+    }
+
+    private Player getNearestSurvivorToHunter(Player hunter)
+    {
+        Player nearestSurvivor = null;
+        double nearestSurvivorDistance = Double.MAX_VALUE;
+
+        for (Player survivor : HuntedPlugin.getInstance().getGameManager().getSurvivorsTeam().getPlayers())
+        {
+            if (survivor != hunter)
+            {
+                double distanceBetweenThem = survivor.getLocation().distance(hunter.getLocation());
+
+                if (distanceBetweenThem < nearestSurvivorDistance)
+                {
+                    nearestSurvivor = survivor;
+                    nearestSurvivorDistance = distanceBetweenThem;
+                }
+            }
+        }
+
+        return nearestSurvivor;
+    }
+}

@@ -1,6 +1,7 @@
 package me.ayydan.hunted.core;
 
 import me.ayydan.hunted.HuntedPlugin;
+import me.ayydan.hunted.item.SurvivorTrackingCompassItem;
 import me.ayydan.hunted.tasks.HuntedCountdownTask;
 import me.ayydan.hunted.tasks.HuntedGameUpdaterTask;
 import me.ayydan.hunted.teams.HuntersTeam;
@@ -15,6 +16,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -22,7 +24,9 @@ import org.checkerframework.checker.units.qual.A;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class HuntedGameManager
 {
@@ -30,6 +34,7 @@ public class HuntedGameManager
     private final SurvivorsTeam survivorsTeam;
     private final SpectatorsTeam spectatorsTeam;
 
+    private HashMap<Player, SurvivorTrackingCompassItem> huntersToSurvivorTrackingCompass;
     private HuntedGameUpdaterTask gameUpdaterTask;
     private HuntedGameState currentGameState;
 
@@ -51,7 +56,7 @@ public class HuntedGameManager
             return;
         }
 
-        if (this.huntersTeam.getPlayerCount() == 0)
+        /* if (this.huntersTeam.getPlayerCount() == 0)
         {
             Bukkit.getServer().broadcast(Component.text("A match of Minecraft Manhunt cannot be started as there are no Hunters!", NamedTextColor.RED));
             return;
@@ -61,9 +66,11 @@ public class HuntedGameManager
         {
             Bukkit.getServer().broadcast(Component.text("A match of Minecraft Manhunt cannot be started as there are no Survivors!", NamedTextColor.RED));
             return;
-        }
+        } */
 
         this.currentGameState = HuntedGameState.Starting;
+
+        this.huntersToSurvivorTrackingCompass = new HashMap<>(this.huntersTeam.getPlayerCount());
 
         this.createStartAreaAndTeleportPlayers();
         this.clearHuntersAndSurvivorsInventories();
@@ -83,6 +90,14 @@ public class HuntedGameManager
 
     public void tickGame()
     {
+        for (Map.Entry<Player, SurvivorTrackingCompassItem> entry : this.huntersToSurvivorTrackingCompass.entrySet())
+        {
+            Player hunter = entry.getKey();
+            SurvivorTrackingCompassItem survivorTrackingCompass = entry.getValue();
+
+            survivorTrackingCompass.updateTrackingCompass(hunter);
+        }
+
         // TODO: (Ayydan) Remove this test code.
         Bukkit.getServer().broadcast(Component.text("A match of Minecraft Manhunt has been updated!", NamedTextColor.GREEN));
     }
@@ -90,6 +105,8 @@ public class HuntedGameManager
     public void endGame()
     {
         this.currentGameState = HuntedGameState.Ending;
+
+        this.huntersToSurvivorTrackingCompass.clear();
 
         this.gameUpdaterTask.cancel();
 
@@ -132,7 +149,13 @@ public class HuntedGameManager
 
     private void giveHuntersSurvivorTrackers()
     {
-        // TODO: (Ayydan) Implement.
+        for (Player hunter : this.huntersTeam.getPlayers())
+        {
+            SurvivorTrackingCompassItem survivorTrackingCompassItem = new SurvivorTrackingCompassItem();
+            this.huntersToSurvivorTrackingCompass.put(hunter, survivorTrackingCompassItem);
+
+            hunter.getInventory().addItem(survivorTrackingCompassItem.getItemStack());
+        }
     }
 
     private void clearHuntersAndSurvivorsInventories()
