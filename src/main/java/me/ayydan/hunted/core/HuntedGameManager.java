@@ -4,17 +4,23 @@ import me.ayydan.hunted.HuntedPlugin;
 import me.ayydan.hunted.tasks.HuntedCountdownTask;
 import me.ayydan.hunted.tasks.HuntedGameUpdaterTask;
 import me.ayydan.hunted.teams.HuntersTeam;
+import me.ayydan.hunted.teams.SpectatorsTeam;
 import me.ayydan.hunted.teams.SurvivorsTeam;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.checkerframework.checker.units.qual.A;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +28,7 @@ public class HuntedGameManager
 {
     private final HuntersTeam huntersTeam;
     private final SurvivorsTeam survivorsTeam;
+    private final SpectatorsTeam spectatorsTeam;
 
     private HuntedGameUpdaterTask gameUpdaterTask;
     private HuntedGameState currentGameState;
@@ -32,6 +39,7 @@ public class HuntedGameManager
 
         this.huntersTeam = new HuntersTeam();
         this.survivorsTeam = new SurvivorsTeam();
+        this.spectatorsTeam = new SpectatorsTeam();
     }
 
     public void startGame()
@@ -92,6 +100,8 @@ public class HuntedGameManager
     {
         Location worldSpawnLocation = Bukkit.getWorlds().get(0).getSpawnLocation();
 
+        ArrayList<ItemStack> participatingPlayerSkulls = new ArrayList<>();
+
         ArrayList<Player> participatingPlayers = new ArrayList<>();
         participatingPlayers.addAll(this.huntersTeam.getPlayers());
         participatingPlayers.addAll(this.survivorsTeam.getPlayers());
@@ -119,6 +129,25 @@ public class HuntedGameManager
                     worldSpawnLocation.getZ() + offsetZ);
 
             participatingPlayer.teleport(teleportLocation);
+
+            ItemStack playerHead = new ItemStack(Material.PLAYER_HEAD);
+
+            SkullMeta skullMeta = (SkullMeta) playerHead.getItemMeta();
+            skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(participatingPlayer.getUniqueId()));
+
+            playerHead.setItemMeta(skullMeta);
+
+            participatingPlayerSkulls.add(playerHead);
+        }
+
+        for (Player spectator : this.spectatorsTeam.getPlayers())
+        {
+            spectator.setGameMode(GameMode.SPECTATOR);
+
+            spectator.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
+
+            for (ItemStack participatingPlayerSkull : participatingPlayerSkulls)
+                spectator.getInventory().addItem(participatingPlayerSkull);
         }
     }
 
@@ -144,6 +173,11 @@ public class HuntedGameManager
     public SurvivorsTeam getSurvivorsTeam()
     {
         return this.survivorsTeam;
+    }
+
+    public SpectatorsTeam getSpectatorsTeam()
+    {
+        return this.spectatorsTeam;
     }
 
     public HuntedGameState getCurrentGameState()

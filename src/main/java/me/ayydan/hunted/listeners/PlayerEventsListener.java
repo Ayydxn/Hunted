@@ -1,11 +1,14 @@
 package me.ayydan.hunted.listeners;
 
+import io.papermc.paper.event.player.AsyncChatEvent;
 import me.ayydan.hunted.HuntedPlugin;
 import me.ayydan.hunted.core.HuntedGameState;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 
 public class PlayerEventsListener implements Listener
@@ -32,5 +35,14 @@ public class PlayerEventsListener implements Listener
     {
         if (HuntedPlugin.getInstance().getGameManager().getCurrentGameState() == HuntedGameState.Starting)
             blockBreakEvent.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onPlayerChat(AsyncChatEvent asyncChatEvent)
+    {
+        boolean hasGameStarted = HuntedPlugin.getInstance().getGameManager().getCurrentGameState() == HuntedGameState.Active;
+        boolean isPlayerSpectating = HuntedPlugin.getInstance().getGameManager().getSpectatorsTeam().isPlayerInTeam(asyncChatEvent.getPlayer());
+
+        asyncChatEvent.setCancelled(hasGameStarted && isPlayerSpectating);
     }
 }

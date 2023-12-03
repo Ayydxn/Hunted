@@ -29,6 +29,7 @@ public class TeamsCommand implements CommandExecutor
             {
                 case "hunters" -> this.huntedGameManager.getHuntersTeam();
                 case "survivors" -> this.huntedGameManager.getSurvivorsTeam();
+                case "spectators" -> this.huntedGameManager.getSpectatorsTeam();
                 default -> null;
             };
 
