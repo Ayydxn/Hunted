@@ -4,6 +4,8 @@ import io.papermc.paper.event.player.AsyncChatEvent;
 import me.ayydan.hunted.HuntedPlugin;
 import me.ayydan.hunted.core.HuntedGameState;
 import me.ayydan.hunted.item.SurvivorTrackingCompassItem;
+import me.ayydan.hunted.teams.HuntersTeam;
+import me.ayydan.hunted.teams.SurvivorsTeam;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Location;
@@ -13,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -47,6 +50,25 @@ public class PlayerEventsListener implements Listener
     {
         if (HuntedPlugin.getInstance().getGameManager().getCurrentGameState() == HuntedGameState.Starting)
             blockBreakEvent.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onEntityDamage(EntityDamageByEntityEvent damageByEntityEvent)
+    {
+        if (!(damageByEntityEvent.getDamager() instanceof Player attackingPlayer))
+            return;
+
+        if (!(damageByEntityEvent.getEntity() instanceof Player attackedPlayer))
+            return;
+
+        HuntersTeam huntersTeam = HuntedPlugin.getInstance().getGameManager().getHuntersTeam();
+        SurvivorsTeam survivorsTeam = HuntedPlugin.getInstance().getGameManager().getSurvivorsTeam();
+
+        boolean areBothPlayersHunters = huntersTeam.isPlayerInTeam(attackingPlayer) && huntersTeam.isPlayerInTeam(attackedPlayer);
+        boolean areBothPlayersSurvivors = survivorsTeam.isPlayerInTeam(attackingPlayer) && survivorsTeam.isPlayerInTeam(attackedPlayer);
+
+        if (areBothPlayersHunters || areBothPlayersSurvivors)
+            damageByEntityEvent.setCancelled(true);
     }
 
     @EventHandler
