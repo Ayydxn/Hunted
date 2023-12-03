@@ -14,13 +14,13 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.time.Duration;
 
-public class HuntedCountdownTask extends BukkitRunnable
+public class HuntedGameStartCountdownTask extends BukkitRunnable
 {
     private final HuntedCountdownCompleteCallback onCountdownFinish;
 
     private int countdownTime = 10;
 
-    public HuntedCountdownTask(HuntedCountdownCompleteCallback onCountdownComplete)
+    public HuntedGameStartCountdownTask(HuntedCountdownCompleteCallback onCountdownComplete)
     {
         this.onCountdownFinish = onCountdownComplete;
     }

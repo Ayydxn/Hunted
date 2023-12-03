@@ -45,12 +45,6 @@ public class SurvivorTrackingCompassItem
 
         Player nearestSurvivor = this.getNearestSurvivorToHunter(hunterUser);
 
-        if (nearestSurvivor == null)
-        {
-            hunterUser.sendActionBar(Component.text("No survivors are nearby or at least one of them is too far away to be tracked!"));
-            return;
-        }
-
         this.survivorTrackingCompassMeta = (CompassMeta) this.survivorTrackingCompassItem.getItemMeta();
         this.survivorTrackingCompassMeta.displayName(DISPLAY_NAME);
         this.survivorTrackingCompassMeta.addItemFlags(ItemFlag.HIDE_ITEM_SPECIFICS);
@@ -59,11 +53,18 @@ public class SurvivorTrackingCompassItem
 
         if (hunterUser.getInventory().getItemInMainHand().getType() == this.survivorTrackingCompassItem.getType())
         {
-            int distanceDifference = (int) hunterUser.getLocation().distance(nearestSurvivor.getLocation());
-            String nearestPlayerInfo = this.getNearestSurvivorLocationInfo(hunterUser, nearestSurvivor, distanceDifference);
+            if (nearestSurvivor == null)
+            {
+                hunterUser.sendActionBar(Component.text("No survivors are nearby or at least one of them is too far away to be tracked!"));
+            }
+            else
+            {
+                int distanceDifference = (int) hunterUser.getLocation().distance(nearestSurvivor.getLocation());
+                String nearestPlayerInfo = this.getNearestSurvivorLocationInfo(hunterUser, nearestSurvivor, distanceDifference);
 
-            hunterUser.setCompassTarget(nearestSurvivor.getLocation());
-            hunterUser.sendActionBar(Component.text(nearestPlayerInfo));
+                hunterUser.setCompassTarget(nearestSurvivor.getLocation());
+                hunterUser.sendActionBar(Component.text(nearestPlayerInfo));
+            }
         }
     }
 

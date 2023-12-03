@@ -1,5 +1,6 @@
 package me.ayydan.hunted.teams;
 
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
 public class SpectatorsTeam extends HuntedTeam
@@ -13,6 +14,8 @@ public class SpectatorsTeam extends HuntedTeam
     public void addPlayer(Player player)
     {
         super.addPlayer(player);
+
+        player.setGameMode(GameMode.SPECTATOR);
     }
 
     @Override

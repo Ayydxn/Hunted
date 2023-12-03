@@ -2,7 +2,7 @@ package me.ayydan.hunted.core;
 
 import me.ayydan.hunted.HuntedPlugin;
 import me.ayydan.hunted.item.SurvivorTrackingCompassItem;
-import me.ayydan.hunted.tasks.HuntedCountdownTask;
+import me.ayydan.hunted.tasks.HuntedGameStartCountdownTask;
 import me.ayydan.hunted.tasks.HuntedGameUpdaterTask;
 import me.ayydan.hunted.teams.HuntersTeam;
 import me.ayydan.hunted.teams.SpectatorsTeam;
@@ -15,17 +15,9 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
-import org.checkerframework.checker.units.qual.A;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class HuntedGameManager
@@ -75,7 +67,7 @@ public class HuntedGameManager
         this.createStartAreaAndTeleportPlayers();
         this.clearHuntersAndSurvivorsInventories();
 
-        HuntedCountdownTask huntedCountdownTask = new HuntedCountdownTask(() ->
+        HuntedGameStartCountdownTask huntedGameStartCountdownTask = new HuntedGameStartCountdownTask(() ->
         {
             this.gameUpdaterTask = new HuntedGameUpdaterTask(this);
             this.gameUpdaterTask.runTaskTimer(HuntedPlugin.getInstance(), 0L, 100L);
@@ -85,7 +77,7 @@ public class HuntedGameManager
             this.currentGameState = HuntedGameState.Active;
         });
 
-        huntedCountdownTask.runTaskTimer(HuntedPlugin.getInstance(), 0L, 20L);
+        huntedGameStartCountdownTask.runTaskTimer(HuntedPlugin.getInstance(), 0L, 20L);
     }
 
     public void tickGame()
