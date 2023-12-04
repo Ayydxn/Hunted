@@ -35,8 +35,7 @@ public abstract class HuntedCountdownTask extends BukkitRunnable
     public void displayCountdown(String message, @Nullable Player player)
     {
         Component countdownSeconds = Component.text(String.format("%d seconds", this.countdownTime), NamedTextColor.RED).decorate(TextDecoration.BOLD);
-        Title.Times countdownMessageDuration = Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3000),
-                this.countdownTime == 0 ? Duration.ofMillis(500) : Duration.ofMillis(0));
+        Title.Times countdownMessageDuration = Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3000), Duration.ofMillis(500));
         Title countdownMessage = Title.title(Component.text(message, NamedTextColor.YELLOW), countdownSeconds, countdownMessageDuration);
 
         if (player != null)

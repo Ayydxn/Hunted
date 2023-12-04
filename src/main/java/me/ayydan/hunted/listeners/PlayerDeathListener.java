@@ -2,6 +2,7 @@ package me.ayydan.hunted.listeners;
 
 import me.ayydan.hunted.HuntedPlugin;
 import me.ayydan.hunted.core.HuntedGameState;
+import me.ayydan.hunted.gui.HunterRespawnGUI;
 import me.ayydan.hunted.tasks.HuntedRespawnCountdownTask;
 import me.ayydan.hunted.teams.HuntersTeam;
 import me.ayydan.hunted.teams.SpectatorsTeam;
@@ -38,32 +39,23 @@ public class PlayerDeathListener implements Listener
         {
             if (huntersTeam.getPlayerCount() > 1)
             {
-                int randomTeammateIndex = new Random().nextInt(0, huntersTeam.getPlayerCount());
-                Player teammateToBeTeleportedTo = huntersTeam.getPlayers().get(randomTeammateIndex);
-
-                killedPlayer.setGameMode(GameMode.SURVIVAL);
-                killedPlayer.teleport(teammateToBeTeleportedTo.getLocation());
+                new HunterRespawnGUI().open(killedPlayer);
             }
             else
             {
+                Title.Times respawnMessageDuration = Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3000), Duration.ofMillis(500));
+                Title respawnMessage = Title.title(Component.text("You have respawned!", NamedTextColor.GREEN), Component.empty(), respawnMessageDuration);
+
+                killedPlayer.showTitle(respawnMessage);
+
                 killedPlayer.teleport(deathLocation);
                 killedPlayer.setGameMode(GameMode.SURVIVAL);
-            }
 
-            for (Player player : Bukkit.getServer().getOnlinePlayers())
-            {
-                if (player.getName().equalsIgnoreCase(killedPlayer.getName()))
+                for (Player player : Bukkit.getServer().getOnlinePlayers())
                 {
-                    Title.Times respawnMessageDuration = Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3000), Duration.ofMillis(500));
-                    Title respawnMessage = Title.title(Component.text("You have respawned!", NamedTextColor.GREEN), Component.empty(), respawnMessageDuration);
-
-                    player.showTitle(respawnMessage);
-
-                    continue;
+                    player.sendActionBar(Component.text(String.format("The Hunter %s has respawned!", killedPlayer.getName()), NamedTextColor.GREEN));
+                    player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
                 }
-
-                player.sendActionBar(Component.text(String.format("The Hunter %s has respawned!", killedPlayer.getName()), NamedTextColor.GREEN));
-                player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
             }
         });
 

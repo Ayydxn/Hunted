@@ -1,6 +1,7 @@
 package me.ayydan.hunted.listeners;
 
 import me.ayydan.hunted.HuntedPlugin;
+import me.ayydan.hunted.core.HuntedGameState;
 import me.ayydan.hunted.teams.HuntersTeam;
 import me.ayydan.hunted.teams.SurvivorsTeam;
 import org.bukkit.entity.Player;
@@ -25,7 +26,7 @@ public class EntityDamagedListener implements Listener
         boolean areBothPlayersHunters = huntersTeam.isPlayerInTeam(attackingPlayer) && huntersTeam.isPlayerInTeam(attackedPlayer);
         boolean areBothPlayersSurvivors = survivorsTeam.isPlayerInTeam(attackingPlayer) && survivorsTeam.isPlayerInTeam(attackedPlayer);
 
-        if (areBothPlayersHunters || areBothPlayersSurvivors)
+        if (areBothPlayersHunters || areBothPlayersSurvivors || HuntedPlugin.getInstance().getGameManager().getCurrentGameState() == HuntedGameState.Starting)
             damageByEntityEvent.setCancelled(true);
     }
 }

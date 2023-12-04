@@ -1,5 +1,6 @@
 package me.ayydan.hunted.tasks;
 
+import me.ayydan.hunted.HuntedPlugin;
 import me.ayydan.hunted.callbacks.HuntedCountdownCompletionCallback;
 import org.bukkit.entity.Player;
 
@@ -26,6 +27,13 @@ public class HuntedRespawnCountdownTask extends HuntedCountdownTask
             return;
         }
 
-        this.displayCountdown("You will be respawned in", this.killedPlayer);
+        if (HuntedPlugin.getInstance().getGameManager().getHuntersTeam().getPlayerCount() > 1)
+        {
+            this.displayCountdown("You will be able to respawn in", this.killedPlayer);
+        }
+        else
+        {
+            this.displayCountdown("You will be respawned in", this.killedPlayer);
+        }
     }
 }

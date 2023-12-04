@@ -30,6 +30,7 @@ public final class HuntedPlugin extends JavaPlugin
         this.getServer().getPluginManager().registerEvents(new ItemDroppedListener(), this);
         this.getServer().getPluginManager().registerEvents(new PlayerDeathListener(), this);
         this.getServer().getPluginManager().registerEvents(new PlayerChatListener(), this);
+        this.getServer().getPluginManager().registerEvents(new HunterRespawnGUIListener(), this);
 
         this.getCommand("hunted").setExecutor(new GlobalHuntedCommand(this.huntedGameManager));
         this.getCommand("hunted").setTabCompleter(new HuntedCommandTabCompleter());
