@@ -23,7 +23,14 @@ public class HuntedCommandTabCompleter implements TabCompleter
             autoCompletions.add("stop");
             autoCompletions.add("teams");
 
-            if (args[0].equalsIgnoreCase("start") || args[0].equalsIgnoreCase("stop"))
+            if (args[0].equalsIgnoreCase("start"))
+            {
+                autoCompletions.clear();
+
+                autoCompletions.add("confirm");
+            }
+
+            if (args[0].equalsIgnoreCase("stop"))
                 return null;
 
             if (args[0].equalsIgnoreCase("teams"))
