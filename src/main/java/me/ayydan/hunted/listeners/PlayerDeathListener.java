@@ -1,102 +1,28 @@
 package me.ayydan.hunted.listeners;
 
-import io.papermc.paper.event.player.AsyncChatEvent;
 import me.ayydan.hunted.HuntedPlugin;
 import me.ayydan.hunted.core.HuntedGameState;
-import me.ayydan.hunted.item.SurvivorTrackingCompassItem;
 import me.ayydan.hunted.tasks.HuntedRespawnCountdownTask;
 import me.ayydan.hunted.teams.HuntersTeam;
 import me.ayydan.hunted.teams.SpectatorsTeam;
 import me.ayydan.hunted.teams.SurvivorsTeam;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
-import org.bukkit.*;
-import org.bukkit.entity.Item;
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 
 import java.time.Duration;
-import java.util.Objects;
 import java.util.Random;
 
-public class PlayerEventsListener implements Listener
+public class PlayerDeathListener implements Listener
 {
-    @EventHandler
-    public void onPlayerMove(PlayerMoveEvent playerMoveEvent)
-    {
-        boolean isGameStarting = HuntedPlugin.getInstance().getGameManager().getCurrentGameState() == HuntedGameState.Starting;
-        boolean hasPlayerPosChanged = playerMoveEvent.getFrom() != playerMoveEvent.getTo();
-
-        if (isGameStarting && hasPlayerPosChanged)
-        {
-            Location oldPlayerLocation = playerMoveEvent.getFrom();
-            Location newPlayerLocation = playerMoveEvent.getTo();
-
-            boolean hasPlayerTriedToMove = (oldPlayerLocation.getX() != newPlayerLocation.getX() && oldPlayerLocation.getZ() != newPlayerLocation.getZ()) ||
-                    oldPlayerLocation.getY() != newPlayerLocation.getY();
-
-            // Prevents the player from moving or jumping while the game is starting
-            if (hasPlayerTriedToMove)
-                playerMoveEvent.setTo(oldPlayerLocation);
-        }
-    }
-
-    @EventHandler
-    public void onBlockBreak(BlockBreakEvent blockBreakEvent)
-    {
-        if (HuntedPlugin.getInstance().getGameManager().getCurrentGameState() == HuntedGameState.Starting)
-            blockBreakEvent.setCancelled(true);
-    }
-
-    @EventHandler
-    public void onEntityDamage(EntityDamageByEntityEvent damageByEntityEvent)
-    {
-        if (!(damageByEntityEvent.getDamager() instanceof Player attackingPlayer))
-            return;
-
-        if (!(damageByEntityEvent.getEntity() instanceof Player attackedPlayer))
-            return;
-
-        HuntersTeam huntersTeam = HuntedPlugin.getInstance().getGameManager().getHuntersTeam();
-        SurvivorsTeam survivorsTeam = HuntedPlugin.getInstance().getGameManager().getSurvivorsTeam();
-
-        boolean areBothPlayersHunters = huntersTeam.isPlayerInTeam(attackingPlayer) && huntersTeam.isPlayerInTeam(attackedPlayer);
-        boolean areBothPlayersSurvivors = survivorsTeam.isPlayerInTeam(attackingPlayer) && survivorsTeam.isPlayerInTeam(attackedPlayer);
-
-        if (areBothPlayersHunters || areBothPlayersSurvivors)
-            damageByEntityEvent.setCancelled(true);
-    }
-
-    @EventHandler
-    public void onItemDrop(PlayerDropItemEvent dropItemEvent)
-    {
-        Player player = dropItemEvent.getPlayer();
-        Item droppedItem = dropItemEvent.getItemDrop();
-
-        if (HuntedPlugin.getInstance().getGameManager().getCurrentGameState() != HuntedGameState.Active)
-            return;
-
-        if (!HuntedPlugin.getInstance().getGameManager().getHuntersTeam().isPlayerInTeam(player))
-            return;
-
-        if (!droppedItem.getItemStack().hasItemMeta())
-            return;
-
-        if (!droppedItem.getItemStack().getItemMeta().hasDisplayName())
-            return;
-
-        if (Objects.equals(droppedItem.getItemStack().getItemMeta().displayName(), SurvivorTrackingCompassItem.DISPLAY_NAME))
-            dropItemEvent.setCancelled(true);
-    }
-
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent playerDeathEvent)
     {
@@ -202,20 +128,5 @@ public class PlayerEventsListener implements Listener
         }
 
         return deathMessage;
-    }
-
-    @EventHandler
-    public void onPlayerChat(AsyncChatEvent asyncChatEvent)
-    {
-        boolean hasGameStarted = HuntedPlugin.getInstance().getGameManager().getCurrentGameState() == HuntedGameState.Active;
-        boolean isPlayerSpectating = HuntedPlugin.getInstance().getGameManager().getSpectatorsTeam().isPlayerInTeam(asyncChatEvent.getPlayer());
-
-        if (hasGameStarted && isPlayerSpectating)
-        {
-            asyncChatEvent.getPlayer().sendMessage(Component.text("You are not allowed to chat as a spectator in order to upkeep competitive integrity!",
-                    NamedTextColor.RED));
-
-            asyncChatEvent.setCancelled(true);
-        }
     }
 }
