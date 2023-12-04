@@ -4,6 +4,7 @@ import me.ayydan.hunted.HuntedPlugin;
 import me.ayydan.hunted.core.HuntedGameManager;
 import me.ayydan.hunted.core.HuntedGameState;
 import me.ayydan.hunted.teams.HuntersTeam;
+import me.ayydan.hunted.utils.MathUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -32,7 +33,7 @@ public class HunterRespawnGUI
         ArrayList<Player> hunterTeammates = huntersTeam.getPlayers();
         hunterTeammates.removeIf(hunterPlayer -> hunterPlayer.getName().equalsIgnoreCase(player.getName()));
 
-        Inventory respawnGUI = Bukkit.createInventory(player, 45, TITLE);
+        Inventory respawnGUI = Bukkit.createInventory(player, MathUtils.roundToNearestMultiple(hunterTeammates.size(), 9), TITLE);
 
         for (Player hunterTeammate : hunterTeammates)
         {
