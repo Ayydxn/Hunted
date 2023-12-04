@@ -67,7 +67,8 @@ public class HuntedGameManager
         this.createStartAreaAndTeleportPlayers();
         this.clearHuntersAndSurvivorsInventories();
 
-        HuntedGameStartCountdownTask huntedGameStartCountdownTask = new HuntedGameStartCountdownTask(() ->
+        // TODO: (Ayydan) Countdown timer should be configurable.
+        HuntedGameStartCountdownTask huntedGameStartCountdownTask = new HuntedGameStartCountdownTask(10, () ->
         {
             this.gameUpdaterTask = new HuntedGameUpdaterTask(this);
             this.gameUpdaterTask.runTaskTimer(HuntedPlugin.getInstance(), 0L, 100L);

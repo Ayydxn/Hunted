@@ -4,12 +4,14 @@ import io.papermc.paper.event.player.AsyncChatEvent;
 import me.ayydan.hunted.HuntedPlugin;
 import me.ayydan.hunted.core.HuntedGameState;
 import me.ayydan.hunted.item.SurvivorTrackingCompassItem;
-import me.ayydan.hunted.teams.HuntedTeam;
+import me.ayydan.hunted.tasks.HuntedRespawnCountdownTask;
 import me.ayydan.hunted.teams.HuntersTeam;
 import me.ayydan.hunted.teams.SpectatorsTeam;
 import me.ayydan.hunted.teams.SurvivorsTeam;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -18,12 +20,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 
+import java.time.Duration;
 import java.util.Objects;
+import java.util.Random;
 
 public class PlayerEventsListener implements Listener
 {
@@ -102,34 +104,78 @@ public class PlayerEventsListener implements Listener
             return;
 
         Player killedPlayer = playerDeathEvent.getPlayer();
+        Location deathLocation = killedPlayer.getLocation();
         HuntersTeam huntersTeam = HuntedPlugin.getInstance().getGameManager().getHuntersTeam();
         SurvivorsTeam survivorsTeam = HuntedPlugin.getInstance().getGameManager().getSurvivorsTeam();
         SpectatorsTeam spectatorsTeam = HuntedPlugin.getInstance().getGameManager().getSpectatorsTeam();
-
-        if (huntersTeam.isPlayerInTeam(killedPlayer))
+        HuntedRespawnCountdownTask huntedRespawnCountdownTask = new HuntedRespawnCountdownTask(killedPlayer, 15, () ->
         {
-            String deathMessage = String.format("The hunter '%s' has died! They will be respawned in 15 seconds.", killedPlayer.getName());
-
-            if (killedPlayer.getKiller() != null)
+            if (huntersTeam.getPlayerCount() > 1)
             {
-                deathMessage = String.format("The hunter '%s' was killed by '%s'! They will be respawned in 15 seconds.", killedPlayer.getName(),
-                        killedPlayer.getKiller().getName());
+                int randomTeammateIndex = new Random().nextInt(0, huntersTeam.getPlayerCount());
+                Player teammateToBeTeleportedTo = huntersTeam.getPlayers().get(randomTeammateIndex);
+
+                killedPlayer.setGameMode(GameMode.SURVIVAL);
+                killedPlayer.teleport(teammateToBeTeleportedTo.getLocation());
+            }
+            else
+            {
+                killedPlayer.teleport(deathLocation);
+                killedPlayer.setGameMode(GameMode.SURVIVAL);
             }
 
             for (Player player : Bukkit.getServer().getOnlinePlayers())
             {
+                if (player.getName().equalsIgnoreCase(killedPlayer.getName()))
+                {
+                    Title.Times respawnMessageDuration = Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3000), Duration.ofMillis(500));
+                    Title respawnMessage = Title.title(Component.text("You have respawned!", NamedTextColor.GREEN), Component.empty(), respawnMessageDuration);
+
+                    player.showTitle(respawnMessage);
+
+                    continue;
+                }
+
+                player.sendActionBar(Component.text(String.format("The Hunter %s has respawned!", killedPlayer.getName()), NamedTextColor.GREEN));
+                player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
+            }
+        });
+
+        if (huntersTeam.isPlayerInTeam(killedPlayer))
+        {
+            String deathMessage = this.getHunterDeathMessage(killedPlayer, huntedRespawnCountdownTask);
+
+            for (Player player : Bukkit.getServer().getOnlinePlayers())
+            {
+                if (player.getName().equalsIgnoreCase(killedPlayer.getName()) && killedPlayer.getKiller() != null)
+                {
+                    player.sendActionBar(Component.text(String.format("You were killed by %s!", killedPlayer.getKiller().getName()), NamedTextColor.RED));
+                    player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
+
+                    continue;
+                }
+                else if (player.getName().equalsIgnoreCase(killedPlayer.getName()))
+                {
+                    player.sendActionBar(Component.text("You died!", NamedTextColor.RED));
+                    player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
+
+                    continue;
+                }
+
                 player.sendActionBar(Component.text(deathMessage, NamedTextColor.GREEN));
                 player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
             }
 
-            // TODO: (Ayydan) Add countdown and respawn the hunter.
+            killedPlayer.setGameMode(GameMode.SPECTATOR);
+
+            huntedRespawnCountdownTask.runTaskTimer(HuntedPlugin.getInstance(), 0L,20L);
         }
         else if (survivorsTeam.isPlayerInTeam(killedPlayer))
         {
-            String deathMessage = String.format("The survivor '%s' has died!", killedPlayer.getName());
+            String deathMessage = String.format("The survivor %s has died!", killedPlayer.getName());
 
             if (killedPlayer.getKiller() != null)
-                deathMessage = String.format("The survivor '%s' was killed by '%s'!", killedPlayer.getName(), killedPlayer.getKiller().getName());
+                deathMessage = String.format("The survivor %s was killed by %s!", killedPlayer.getName(), killedPlayer.getKiller().getName());
 
             for (Player player : Bukkit.getServer().getOnlinePlayers())
             {
@@ -140,6 +186,22 @@ public class PlayerEventsListener implements Listener
             survivorsTeam.removePlayer(killedPlayer);
             spectatorsTeam.addPlayer(killedPlayer);
         }
+
+        playerDeathEvent.setCancelled(true);
+    }
+
+    private String getHunterDeathMessage(Player killedHunter, HuntedRespawnCountdownTask huntedRespawnCountdownTask)
+    {
+        String deathMessage = String.format("The hunter %s has died! They will be respawned in %d seconds.", killedHunter.getName(),
+                huntedRespawnCountdownTask.getCountdownTime());
+
+        if (killedHunter.getKiller() != null)
+        {
+            deathMessage = String.format("The hunter %s was killed by %s! They will be respawned in %d seconds.", killedHunter.getName(),
+                    killedHunter.getKiller().getName(), huntedRespawnCountdownTask.getCountdownTime());
+        }
+
+        return deathMessage;
     }
 
     @EventHandler

@@ -1,6 +1,6 @@
 package me.ayydan.hunted.callbacks;
 
-public interface HuntedCountdownCompleteCallback
+public interface HuntedCountdownCompletionCallback
 {
     void onCountdownComplete();
 }

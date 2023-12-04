@@ -1,7 +1,7 @@
 package me.ayydan.hunted.tasks;
 
 import me.ayydan.hunted.HuntedPlugin;
-import me.ayydan.hunted.callbacks.HuntedCountdownCompleteCallback;
+import me.ayydan.hunted.callbacks.HuntedCountdownCompletionCallback;
 import me.ayydan.hunted.core.HuntedGameState;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -10,23 +10,18 @@ import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.time.Duration;
 
-public class HuntedGameStartCountdownTask extends BukkitRunnable
+public class HuntedGameStartCountdownTask extends HuntedCountdownTask
 {
-    private final HuntedCountdownCompleteCallback onCountdownFinish;
-
-    private int countdownTime = 10;
-
-    public HuntedGameStartCountdownTask(HuntedCountdownCompleteCallback onCountdownComplete)
+    public HuntedGameStartCountdownTask(int countdownTime, HuntedCountdownCompletionCallback countdownCompletionCallback)
     {
-        this.onCountdownFinish = onCountdownComplete;
+        super(countdownTime, countdownCompletionCallback);
     }
 
     @Override
-    public void run()
+    public void start()
     {
         if (HuntedPlugin.getInstance().getGameManager().getCurrentGameState() == HuntedGameState.Ending ||
                 HuntedPlugin.getInstance().getGameManager().getCurrentGameState() == HuntedGameState.Ended)
@@ -71,13 +66,13 @@ public class HuntedGameStartCountdownTask extends BukkitRunnable
                 player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
             }
 
-            this.onCountdownFinish.onCountdownComplete();
+            this.countdownCompletionCallback.onCountdownComplete();
 
             this.cancel();
             return;
         }
 
-        this.displayCountdown();
+        this.displayCountdown("Starting Game in", null);
     }
 
     private void displayGameCanceledMessage()
@@ -87,24 +82,5 @@ public class HuntedGameStartCountdownTask extends BukkitRunnable
 
         for (Player player : Bukkit.getServer().getOnlinePlayers())
             player.showTitle(gameCanceledMessage);
-    }
-
-    private void displayCountdown()
-    {
-        Component countdownSeconds = Component.text(String.format("%d seconds", this.countdownTime), NamedTextColor.RED).decorate(TextDecoration.BOLD);
-        Title.Times countdownMessageDuration = Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3000), Duration.ofMillis(0));
-        Title countdownMessage = Title.title(Component.text("Starting Game in", NamedTextColor.YELLOW), countdownSeconds, countdownMessageDuration);
-
-        for (Player player : Bukkit.getServer().getOnlinePlayers())
-        {
-            player.teleport(player.getLocation());
-
-            player.showTitle(countdownMessage);
-
-            if (this.countdownTime <= 3)
-                player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
-        }
-
-        this.countdownTime--;
     }
 }
