@@ -32,8 +32,6 @@ public class SurvivorDangerMeter
             return;
 
         int distanceInBlocks = (int) targetSurvivorPlayer.getLocation().distance(nearestPlayer.getLocation());
-        targetSurvivorPlayer.sendMessage(Component.text("Distance From Nearest Hunter: " + distanceInBlocks + " Blocks"));
-
         this.dangerMeter.progress(this.getMeterProgress(distanceInBlocks));
     }
 
