@@ -5,7 +5,11 @@ import me.ayydan.hunted.commands.HuntedCommandTabCompleter;
 import me.ayydan.hunted.core.HuntedGameManager;
 import me.ayydan.hunted.listeners.*;
 import me.ayydan.hunted.utils.HuntedLogger;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.reflections.Reflections;
+
+import java.lang.reflect.InvocationTargetException;
 
 public final class HuntedPlugin extends JavaPlugin
 {
@@ -24,13 +28,18 @@ public final class HuntedPlugin extends JavaPlugin
 
         this.huntedGameManager = new HuntedGameManager();
 
-        this.getServer().getPluginManager().registerEvents(new PlayerMoveListener(), this);
-        this.getServer().getPluginManager().registerEvents(new BlockBreakListener(), this);
-        this.getServer().getPluginManager().registerEvents(new EntityDamagedListener(), this);
-        this.getServer().getPluginManager().registerEvents(new ItemDroppedListener(), this);
-        this.getServer().getPluginManager().registerEvents(new PlayerDeathListener(), this);
-        this.getServer().getPluginManager().registerEvents(new PlayerChatListener(), this);
-        this.getServer().getPluginManager().registerEvents(new HunterRespawnGUIListener(), this);
+        for (Class<?> listenerClass : new Reflections(getClass().getPackage().getName() + ".listeners").getSubTypesOf(Listener.class))
+        {
+            try
+            {
+                Listener listenerClassInstance = (Listener) listenerClass.getDeclaredConstructor().newInstance();
+                this.getServer().getPluginManager().registerEvents(listenerClassInstance, this);
+            }
+            catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException exception)
+            {
+                exception.printStackTrace();
+            }
+        }
 
         this.getCommand("hunted").setExecutor(new GlobalHuntedCommand(this.huntedGameManager));
         this.getCommand("hunted").setTabCompleter(new HuntedCommandTabCompleter());

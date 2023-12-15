@@ -28,6 +28,7 @@ dependencies {
     compileOnly "io.papermc.paper:paper-api:${project.minecraft_version}-${project.paper_version}"
 
     implementation "net.kyori:adventure-api:${project.adventure_version}"
+    implementation "org.reflections:reflections:${project.reflections_version}"
 
     paperweight.paperDevBundle("${project.minecraft_version}-${project.paper_version}")
 }
@@ -39,6 +40,15 @@ java {
     targetCompatibility = javaVersion
     if (JavaVersion.current() < javaVersion) {
         toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.WARN
+
+    // Will include every single one of your dependencies, project or not
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
 
