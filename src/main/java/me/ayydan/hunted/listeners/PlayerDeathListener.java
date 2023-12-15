@@ -61,51 +61,61 @@ public class PlayerDeathListener implements Listener
 
         if (huntersTeam.isPlayerInTeam(killedPlayer))
         {
-            String deathMessage = this.getHunterDeathMessage(killedPlayer, huntedRespawnCountdownTask);
-
-            for (Player player : Bukkit.getServer().getOnlinePlayers())
-            {
-                if (player.getName().equalsIgnoreCase(killedPlayer.getName()) && killedPlayer.getKiller() != null)
-                {
-                    player.sendActionBar(Component.text(String.format("You were killed by %s!", killedPlayer.getKiller().getName()), NamedTextColor.RED));
-                    player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
-
-                    continue;
-                }
-                else if (player.getName().equalsIgnoreCase(killedPlayer.getName()))
-                {
-                    player.sendActionBar(Component.text("You died!", NamedTextColor.RED));
-                    player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
-
-                    continue;
-                }
-
-                player.sendActionBar(Component.text(deathMessage, NamedTextColor.GREEN));
-                player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
-            }
-
-            killedPlayer.setGameMode(GameMode.SPECTATOR);
-
-            huntedRespawnCountdownTask.runTaskTimer(HuntedPlugin.getInstance(), 0L,20L);
+            this.onHunterDeath(killedPlayer, huntedRespawnCountdownTask);
         }
         else if (survivorsTeam.isPlayerInTeam(killedPlayer))
         {
-            String deathMessage = String.format("The survivor %s has died!", killedPlayer.getName());
-
-            if (killedPlayer.getKiller() != null)
-                deathMessage = String.format("The survivor %s was killed by %s!", killedPlayer.getName(), killedPlayer.getKiller().getName());
-
-            for (Player player : Bukkit.getServer().getOnlinePlayers())
-            {
-                player.sendActionBar(Component.text(deathMessage, NamedTextColor.GREEN));
-                player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
-            }
-
-            survivorsTeam.removePlayer(killedPlayer);
-            spectatorsTeam.addPlayer(killedPlayer);
+            this.onSurvivorDeath(killedPlayer, survivorsTeam, spectatorsTeam);
         }
 
         playerDeathEvent.setCancelled(true);
+    }
+
+    private void onHunterDeath(Player killedHunter, HuntedRespawnCountdownTask huntedRespawnCountdownTask)
+    {
+        String deathMessage = this.getHunterDeathMessage(killedHunter, huntedRespawnCountdownTask);
+
+        for (Player player : Bukkit.getServer().getOnlinePlayers())
+        {
+            if (player.getName().equalsIgnoreCase(killedHunter.getName()) && killedHunter.getKiller() != null)
+            {
+                player.sendActionBar(Component.text(String.format("You were killed by %s!", killedHunter.getKiller().getName()), NamedTextColor.RED));
+                player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
+
+                continue;
+            }
+            else if (player.getName().equalsIgnoreCase(killedHunter.getName()))
+            {
+                player.sendActionBar(Component.text("You died!", NamedTextColor.RED));
+                player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
+
+                continue;
+            }
+
+            player.sendActionBar(Component.text(deathMessage, NamedTextColor.GREEN));
+            player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
+        }
+
+        killedHunter.setGameMode(GameMode.SPECTATOR);
+
+        huntedRespawnCountdownTask.runTaskTimer(HuntedPlugin.getInstance(), 0L,20L);
+    }
+
+    private void onSurvivorDeath(Player killedSurvivor, SurvivorsTeam survivorsTeam, SpectatorsTeam spectatorsTeam)
+    {
+        String deathMessage = String.format("The survivor %s has died!", killedSurvivor.getName());
+
+        if (killedSurvivor.getKiller() != null)
+            deathMessage = String.format("The survivor %s was killed by %s!", killedSurvivor.getName(), killedSurvivor.getKiller().getName());
+
+        for (Player player : Bukkit.getServer().getOnlinePlayers())
+        {
+            player.sendActionBar(Component.text(deathMessage, NamedTextColor.GREEN));
+            player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
+        }
+
+        survivorsTeam.removePlayer(killedSurvivor);
+        spectatorsTeam.addPlayer(killedSurvivor);
     }
 
     private String getHunterDeathMessage(Player killedHunter, HuntedRespawnCountdownTask huntedRespawnCountdownTask)
