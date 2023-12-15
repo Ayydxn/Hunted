@@ -3,6 +3,7 @@ package me.ayydan.hunted.listeners;
 import me.ayydan.hunted.HuntedPlugin;
 import me.ayydan.hunted.core.HuntedGameState;
 import me.ayydan.hunted.gui.HunterRespawnGUI;
+import me.ayydan.hunted.tasks.HuntedResetWorldCountdown;
 import me.ayydan.hunted.tasks.HuntedRespawnCountdownTask;
 import me.ayydan.hunted.teams.HuntersTeam;
 import me.ayydan.hunted.teams.SpectatorsTeam;
@@ -20,7 +21,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 
 import java.time.Duration;
-import java.util.Random;
 
 public class PlayerDeathListener implements Listener
 {
@@ -103,19 +103,60 @@ public class PlayerDeathListener implements Listener
 
     private void onSurvivorDeath(Player killedSurvivor, SurvivorsTeam survivorsTeam, SpectatorsTeam spectatorsTeam)
     {
-        String deathMessage = String.format("The survivor %s has died!", killedSurvivor.getName());
-
-        if (killedSurvivor.getKiller() != null)
-            deathMessage = String.format("The survivor %s was killed by %s!", killedSurvivor.getName(), killedSurvivor.getKiller().getName());
-
-        for (Player player : Bukkit.getServer().getOnlinePlayers())
-        {
-            player.sendActionBar(Component.text(deathMessage, NamedTextColor.GREEN));
-            player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
-        }
-
         survivorsTeam.removePlayer(killedSurvivor);
         spectatorsTeam.addPlayer(killedSurvivor);
+
+        if (survivorsTeam.getPlayerCount() == 0)
+        {
+            this.displayHuntersWinMessage(HuntedPlugin.getInstance().getGameManager().getHuntersTeam());
+            this.displaySurvivorsLoseMessage(survivorsTeam);
+            this.displayWorldResetMessage();
+        }
+        else
+        {
+            String deathMessage = String.format("The survivor %s has died!", killedSurvivor.getName());
+
+            if (killedSurvivor.getKiller() != null)
+                deathMessage = String.format("The survivor %s was killed by %s!", killedSurvivor.getName(), killedSurvivor.getKiller().getName());
+
+            for (Player player : Bukkit.getServer().getOnlinePlayers())
+            {
+                player.sendActionBar(Component.text(deathMessage, NamedTextColor.GREEN));
+                player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1.0f, 1.0f);
+            }
+        }
+    }
+
+    private void displayHuntersWinMessage(HuntersTeam huntersTeam)
+    {
+        for (Player hunter : huntersTeam.getPlayers())
+        {
+            Title.Times winMessageDuration = Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3000), Duration.ofMillis(500));
+            Title winMessage = Title.title(Component.text("You Win!").color(NamedTextColor.GREEN),
+                    Component.text("You have killed all of the survivors!").color(NamedTextColor.GREEN), winMessageDuration);
+
+            hunter.showTitle(winMessage);
+        }
+    }
+
+    private void displaySurvivorsLoseMessage(SurvivorsTeam survivorsTeam)
+    {
+        for (Player survivor : survivorsTeam.getPlayers())
+        {
+            Title.Times loseMessageDuration = Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3000), Duration.ofMillis(500));
+            Title loseMessage = Title.title(Component.text("You Lost!").color(NamedTextColor.RED),
+                    Component.text("All of the survivors have been killed!").color(NamedTextColor.RED), loseMessageDuration);
+
+            survivor.showTitle(loseMessage);
+        }
+    }
+
+    private void displayWorldResetMessage()
+    {
+        HuntedResetWorldCountdown resetWorldCountdown = new HuntedResetWorldCountdown(10, () ->
+                HuntedPlugin.getInstance().getGameManager().endGame());
+
+        resetWorldCountdown.runTaskTimer(HuntedPlugin.getInstance(), 0L, 20L);
     }
 
     private String getHunterDeathMessage(Player killedHunter, HuntedRespawnCountdownTask huntedRespawnCountdownTask)

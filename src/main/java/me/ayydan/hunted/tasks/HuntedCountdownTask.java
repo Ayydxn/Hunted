@@ -32,15 +32,19 @@ public abstract class HuntedCountdownTask extends BukkitRunnable
         this.start();
     }
 
-    public void displayCountdown(String message, @Nullable Player player)
+    public void displayCountdown(String message, @Nullable Player player, boolean displayOnActionBar)
     {
         Component countdownSeconds = Component.text(String.format("%d seconds", this.countdownTime), NamedTextColor.RED).decorate(TextDecoration.BOLD);
+        Component countdownMessageComponent = Component.text(message, NamedTextColor.YELLOW);
         Title.Times countdownMessageDuration = Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3000), Duration.ofMillis(500));
-        Title countdownMessage = Title.title(Component.text(message, NamedTextColor.YELLOW), countdownSeconds, countdownMessageDuration);
+        Title countdownMessage = Title.title(countdownMessageComponent, countdownSeconds, countdownMessageDuration);
 
         if (player != null)
         {
-            player.showTitle(countdownMessage);
+            if (displayOnActionBar)
+                player.sendActionBar(countdownMessageComponent.append(Component.text(" ")).append(countdownSeconds));
+            else
+                player.showTitle(countdownMessage);
 
             if (this.countdownTime <= 3)
                 player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
@@ -49,7 +53,10 @@ public abstract class HuntedCountdownTask extends BukkitRunnable
         {
             for (Player onlinePlayer : Bukkit.getServer().getOnlinePlayers())
             {
-                onlinePlayer.showTitle(countdownMessage);
+                if (displayOnActionBar)
+                    onlinePlayer.sendActionBar(countdownMessageComponent.append(Component.text(" ")).append(countdownSeconds));
+                else
+                    onlinePlayer.showTitle(countdownMessage);
 
                 if (this.countdownTime <= 3)
                     onlinePlayer.playSound(onlinePlayer, Sound.UI_BUTTON_CLICK, 1.0f, 1.0f);
@@ -58,6 +65,11 @@ public abstract class HuntedCountdownTask extends BukkitRunnable
 
 
         this.countdownTime--;
+    }
+
+    public void displayCountdown(String message, @Nullable Player player)
+    {
+        this.displayCountdown(message, player, false);
     }
 
     public int getCountdownTime()
