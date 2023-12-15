@@ -1,6 +1,7 @@
 package me.ayydan.hunted.item;
 
 import me.ayydan.hunted.HuntedPlugin;
+import me.ayydan.hunted.utils.PlayerUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -10,8 +11,6 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.CompassMeta;
 import org.joml.Math;
-
-import java.util.ArrayList;
 
 public class SurvivorTrackingCompassItem
 {
@@ -43,7 +42,7 @@ public class SurvivorTrackingCompassItem
         if (isUserASurvivor || isUserASpectator)
             return;
 
-        Player nearestSurvivor = this.getNearestSurvivorToHunter(hunterUser);
+        Player nearestSurvivor = PlayerUtils.getNearestPlayerFromPlayer(hunterUser);
 
         this.survivorTrackingCompassMeta = (CompassMeta) this.survivorTrackingCompassItem.getItemMeta();
         this.survivorTrackingCompassMeta.displayName(DISPLAY_NAME);
@@ -88,30 +87,5 @@ public class SurvivorTrackingCompassItem
     public ItemStack getItemStack()
     {
         return this.survivorTrackingCompassItem;
-    }
-
-    private Player getNearestSurvivorToHunter(Player hunter)
-    {
-        Player nearestSurvivor = null;
-        double nearestSurvivorDistance = Double.MAX_VALUE;
-
-        for (Player survivor : HuntedPlugin.getInstance().getGameManager().getSurvivorsTeam().getPlayers())
-        {
-            if (survivor.getWorld().getEnvironment() != hunter.getWorld().getEnvironment())
-                break;
-
-            if (survivor != hunter)
-            {
-                double distanceBetweenThem = survivor.getLocation().distance(hunter.getLocation());
-
-                if (distanceBetweenThem < nearestSurvivorDistance)
-                {
-                    nearestSurvivor = survivor;
-                    nearestSurvivorDistance = distanceBetweenThem;
-                }
-            }
-        }
-
-        return nearestSurvivor;
     }
 }

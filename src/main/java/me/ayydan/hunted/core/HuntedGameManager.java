@@ -1,6 +1,7 @@
 package me.ayydan.hunted.core;
 
 import me.ayydan.hunted.HuntedPlugin;
+import me.ayydan.hunted.game.SurvivorDangerMeter;
 import me.ayydan.hunted.item.SurvivorTrackingCompassItem;
 import me.ayydan.hunted.tasks.HuntedGameStartCountdownTask;
 import me.ayydan.hunted.tasks.HuntedGameUpdaterTask;
@@ -27,6 +28,7 @@ public class HuntedGameManager
     private final SpectatorsTeam spectatorsTeam;
 
     private HashMap<Player, SurvivorTrackingCompassItem> huntersToSurvivorTrackingCompass;
+    private HashMap<Player, SurvivorDangerMeter> survivorToDangerMeters;
     private HuntedGameUpdaterTask gameUpdaterTask;
     private HuntedGameState currentGameState;
 
@@ -63,6 +65,7 @@ public class HuntedGameManager
         this.currentGameState = HuntedGameState.Starting;
 
         this.huntersToSurvivorTrackingCompass = new HashMap<>(this.huntersTeam.getPlayerCount());
+        this.survivorToDangerMeters = new HashMap<>(this.survivorsTeam.getPlayerCount());
 
         this.createStartAreaAndTeleportPlayers();
         this.clearHuntersAndSurvivorsInventories();
@@ -74,6 +77,7 @@ public class HuntedGameManager
             this.gameUpdaterTask.runTaskTimer(HuntedPlugin.getInstance(), 0L, 100L);
 
             this.giveHuntersSurvivorTrackers();
+            this.displaySurvivorsDangerMeter();
 
             this.currentGameState = HuntedGameState.Active;
         });
@@ -90,6 +94,14 @@ public class HuntedGameManager
 
             survivorTrackingCompass.updateTrackingCompass(hunter);
         }
+
+        for (Map.Entry<Player, SurvivorDangerMeter> entry : this.survivorToDangerMeters.entrySet())
+        {
+            Player survivor = entry.getKey();
+            SurvivorDangerMeter survivorDangerMeter = entry.getValue();
+
+            survivorDangerMeter.updateMeter(survivor);
+        }
     }
 
     public void endGame()
@@ -97,6 +109,7 @@ public class HuntedGameManager
         this.currentGameState = HuntedGameState.Ending;
 
         this.huntersToSurvivorTrackingCompass.clear();
+        this.survivorToDangerMeters.clear();
 
         this.gameUpdaterTask.cancel();
 
@@ -148,6 +161,17 @@ public class HuntedGameManager
             this.huntersToSurvivorTrackingCompass.put(hunter, survivorTrackingCompassItem);
 
             hunter.getInventory().addItem(survivorTrackingCompassItem.getItemStack());
+        }
+    }
+
+    private void displaySurvivorsDangerMeter()
+    {
+        for (Player survivor : this.survivorsTeam.getPlayers())
+        {
+            SurvivorDangerMeter survivorDangerMeter = new SurvivorDangerMeter();
+            survivorDangerMeter.displayMeter(survivor);
+
+            this.survivorToDangerMeters.put(survivor, survivorDangerMeter);
         }
     }
 
