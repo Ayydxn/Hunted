@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "hunted",
+  "version": "${version}",
+  "name": "Hunted",
+  "description": "A Minecraft Manhunt minigame mod.",
+  "authors": [
+    "Ayydxn"
+  ],
+  "contact": {
+    "homepage": "https://github.com/Ayydan/Hunted",
+    "sources": "https://github.com/Ayydan/Hunted",
+    "issues": "https://github.com/Ayydan/Hunted/issues"
+  },
+  "license": "LGPL-3.0",
+  "icon": "assets/hunted/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "me.ayydxn.hunted.HuntedCommonMod"
+    ]
+  },
+  "mixins": [
+    "hunted.mixins.json"
+  ],
+  "depends": {
+    "minecraft": "${minecraft_version}",
+    "fabric": "*",
+    "fabricloader": ">=${loader_version}"
+  }
+}
