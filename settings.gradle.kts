@@ -8,4 +8,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = "Paper Plugin Template"
+rootProject.name = "Hunted"

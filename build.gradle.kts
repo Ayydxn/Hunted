@@ -59,8 +59,6 @@ tasks.withType(AbstractRun::class) {
         vendor = JvmVendorSpec.AZUL // Change this to be whichever JVM vendor you use if you need to.
         languageVersion = JavaLanguageVersion.of(21)
     }
-
-    jvmArgs("-XX:+AllowEnhancedClassRedefinition", "-XX:+AllowRedefinitionToAddDeleteMethods")
 }
 
 java {
