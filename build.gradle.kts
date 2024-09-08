@@ -4,6 +4,7 @@ plugins {
     id("java")
     id("io.papermc.paperweight.userdev") version "1.7.1"
     id("xyz.jpenilla.run-paper") version "2.3.0"
+    id("com.gradleup.shadow") version "8.3.0"
 }
 
 version = "${rootProject.property("plugin_version")}-mc${rootProject.property("minecraft_version")}"
@@ -24,6 +25,8 @@ repositories {
 
 dependencies {
     paperweight.paperDevBundle("${rootProject.property("minecraft_version")}-${rootProject.property("paper_version")}")
+
+    implementation("org.reflections:reflections:${rootProject.property("reflections_version")}")
 }
 
 tasks {

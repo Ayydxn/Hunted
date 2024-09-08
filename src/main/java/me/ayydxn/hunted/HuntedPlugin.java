@@ -1,5 +1,6 @@
 package me.ayydxn.hunted;
 
+import me.ayydxn.hunted.command.HuntedCommandManager;
 import me.ayydxn.hunted.utils.HuntedLogger;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -16,6 +17,8 @@ public final class HuntedPlugin extends JavaPlugin
         INSTANCE = this;
 
         LOGGER.info("Initializing Hunted... (Version: {})", this.getPluginMeta().getVersion());
+
+        HuntedCommandManager.registerCommands();
     }
 
     @Override
