@@ -16,8 +16,13 @@ repositories {
     maven("https://repo.papermc.io/repository/maven-public/") {
         name = "PaperMC-Repo"
     }
+
     maven("https://oss.sonatype.org/content/groups/public/") {
         name = "Sonatype"
+    }
+
+    maven("https://jitpack.io") {
+        name = "JitPack"
     }
 
     mavenCentral()
@@ -27,6 +32,7 @@ dependencies {
     paperweight.paperDevBundle("${rootProject.property("minecraft_version")}-${rootProject.property("paper_version")}")
 
     implementation("org.reflections:reflections:${rootProject.property("reflections_version")}")
+    implementation("com.github.booksaw:BetterTeams:${rootProject.property("better_teams_version")}")
 }
 
 tasks {

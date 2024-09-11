@@ -1,6 +1,7 @@
 package me.ayydxn.hunted;
 
 import me.ayydxn.hunted.command.HuntedCommandManager;
+import me.ayydxn.hunted.core.HuntedGameManager;
 import me.ayydxn.hunted.utils.HuntedLogger;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -10,6 +11,8 @@ public final class HuntedPlugin extends JavaPlugin
 
     private static final HuntedLogger LOGGER = new HuntedLogger("Hunted");
 
+    private HuntedGameManager huntedGameManager;
+
     @SuppressWarnings("UnstableApiUsage")
     @Override
     public void onEnable()
@@ -17,6 +20,8 @@ public final class HuntedPlugin extends JavaPlugin
         INSTANCE = this;
 
         LOGGER.info("Initializing Hunted... (Version: {})", this.getPluginMeta().getVersion());
+
+        this.huntedGameManager = new HuntedGameManager();
 
         HuntedCommandManager.registerCommands();
     }
@@ -38,5 +43,10 @@ public final class HuntedPlugin extends JavaPlugin
     public static HuntedLogger getHuntedLogger()
     {
         return LOGGER;
+    }
+
+    public HuntedGameManager getGameManager()
+    {
+        return this.huntedGameManager;
     }
 }
