@@ -1,0 +1,6 @@
+name: ${name}
+description: ${description}
+version: '${version}'
+api-version: '${minecraft_version}'
+author: ${author}
+main: ${entrypoint}
