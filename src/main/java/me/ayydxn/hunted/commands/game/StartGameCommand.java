@@ -6,21 +6,21 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
-import me.ayydxn.hunted.commands.base.BaseHuntedCommand;
-import me.ayydxn.hunted.core.HuntedGameManager;
-import me.ayydxn.hunted.core.HuntedGameState;
+import me.ayydxn.hunted.commands.base.AbstractHuntedCommand;
+import me.ayydxn.hunted.core.GameManager;
+import me.ayydxn.hunted.core.GameState;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.command.CommandSender;
 
-public class StartGameCommand implements BaseHuntedCommand
+public class StartGameCommand implements AbstractHuntedCommand
 {
-    private final HuntedGameManager huntedGameManager;
+    private final GameManager gameManager;
 
-    public StartGameCommand(HuntedGameManager huntedGameManager)
+    public StartGameCommand(GameManager gameManager)
     {
-        this.huntedGameManager = huntedGameManager;
+        this.gameManager = gameManager;
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -30,7 +30,7 @@ public class StartGameCommand implements BaseHuntedCommand
         LiteralArgumentBuilder<CommandSourceStack> rootCommand = Commands.literal("start");
         rootCommand.executes(StartGameCommand::sendConfirmationMessage);
         rootCommand.then(Commands.argument("confirm", StringArgumentType.word())
-                .executes(context -> StartGameCommand.startGame(context, this.huntedGameManager)));
+                .executes(context -> StartGameCommand.startGame(context, this.gameManager)));
 
         return rootCommand;
     }
@@ -55,7 +55,7 @@ public class StartGameCommand implements BaseHuntedCommand
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    private static int startGame(CommandContext<CommandSourceStack> context, HuntedGameManager huntedGameManager)
+    private static int startGame(CommandContext<CommandSourceStack> context, GameManager gameManager)
     {
         CommandSender sender = context.getSource().getSender();
 
@@ -65,19 +65,19 @@ public class StartGameCommand implements BaseHuntedCommand
             return Command.SINGLE_SUCCESS;
         }
 
-        if (huntedGameManager.getCurrentGameState() == HuntedGameState.STARTING)
+        if (gameManager.getCurrentGameState() == GameState.STARTING)
         {
             sender.sendMessage(Component.text("You cannot start a match of Minecraft Manhunt while one is already starting!", NamedTextColor.RED));
             return Command.SINGLE_SUCCESS;
         }
 
-        if (huntedGameManager.getCurrentGameState() == HuntedGameState.ACTIVE)
+        if (gameManager.getCurrentGameState() == GameState.ACTIVE)
         {
             sender.sendMessage(Component.text("You cannot start a match of Minecraft Manhunt while one is already active!", NamedTextColor.RED));
             return Command.SINGLE_SUCCESS;
         }
 
-        huntedGameManager.startGame();
+        gameManager.startGame();
 
         return Command.SINGLE_SUCCESS;
     }

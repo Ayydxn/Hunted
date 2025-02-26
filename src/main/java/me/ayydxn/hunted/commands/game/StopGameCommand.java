@@ -6,21 +6,21 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
-import me.ayydxn.hunted.commands.base.BaseHuntedCommand;
-import me.ayydxn.hunted.core.HuntedGameManager;
-import me.ayydxn.hunted.core.HuntedGameState;
+import me.ayydxn.hunted.commands.base.AbstractHuntedCommand;
+import me.ayydxn.hunted.core.GameManager;
+import me.ayydxn.hunted.core.GameState;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.command.CommandSender;
 
-public class StopGameCommand implements BaseHuntedCommand
+public class StopGameCommand implements AbstractHuntedCommand
 {
-    private final HuntedGameManager huntedGameManager;
+    private final GameManager gameManager;
 
-    public StopGameCommand(HuntedGameManager huntedGameManager)
+    public StopGameCommand(GameManager gameManager)
     {
-        this.huntedGameManager = huntedGameManager;
+        this.gameManager = gameManager;
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -30,7 +30,7 @@ public class StopGameCommand implements BaseHuntedCommand
         LiteralArgumentBuilder<CommandSourceStack> rootCommand = Commands.literal("stop");
         rootCommand.executes(StopGameCommand::sendConfirmationMessage);
         rootCommand.then(Commands.argument("confirm", StringArgumentType.word())
-                .executes(context -> StopGameCommand.stopGame(context, this.huntedGameManager)));
+                .executes(context -> StopGameCommand.stopGame(context, this.gameManager)));
 
         return rootCommand;
     }
@@ -52,7 +52,7 @@ public class StopGameCommand implements BaseHuntedCommand
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    private static int stopGame(CommandContext<CommandSourceStack> context, HuntedGameManager huntedGameManager)
+    private static int stopGame(CommandContext<CommandSourceStack> context, GameManager gameManager)
     {
         CommandSender sender = context.getSource().getSender();
 
@@ -62,19 +62,19 @@ public class StopGameCommand implements BaseHuntedCommand
             return Command.SINGLE_SUCCESS;
         }
 
-        if (huntedGameManager.getCurrentGameState() == HuntedGameState.ENDING)
+        if (gameManager.getCurrentGameState() == GameState.ENDING)
         {
             sender.sendMessage(Component.text("You cannot stop a match of Minecraft Manhunt while one is ending!", NamedTextColor.RED));
             return Command.SINGLE_SUCCESS;
         }
 
-        if (huntedGameManager.getCurrentGameState() == HuntedGameState.ENDED)
+        if (gameManager.getCurrentGameState() == GameState.ENDED)
         {
             sender.sendMessage(Component.text("You cannot stop a match of Minecraft Manhunt while one isn't active!", NamedTextColor.RED));
             return Command.SINGLE_SUCCESS;
         }
 
-        huntedGameManager.endGame();
+        gameManager.endGame();
 
         return Command.SINGLE_SUCCESS;
     }

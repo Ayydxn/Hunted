@@ -3,18 +3,19 @@ package me.ayydxn.hunted.commands;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
-import me.ayydxn.hunted.commands.base.BaseHuntedCommand;
+import me.ayydxn.hunted.commands.base.AbstractHuntedCommand;
 import me.ayydxn.hunted.commands.game.StartGameCommand;
 import me.ayydxn.hunted.commands.game.StopGameCommand;
-import me.ayydxn.hunted.core.HuntedGameManager;
+import me.ayydxn.hunted.commands.teams.TeamsCommand;
+import me.ayydxn.hunted.core.GameManager;
 
-public class GlobalHuntedCommand implements BaseHuntedCommand
+public class GlobalHuntedCommand implements AbstractHuntedCommand
 {
-    private final HuntedGameManager huntedGameManager;
+    private final GameManager gameManager;
 
-    public GlobalHuntedCommand(HuntedGameManager huntedGameManager)
+    public GlobalHuntedCommand(GameManager gameManager)
     {
-        this.huntedGameManager = huntedGameManager;
+        this.gameManager = gameManager;
     }
 
     @SuppressWarnings("UnstableApiUsage")
@@ -22,8 +23,9 @@ public class GlobalHuntedCommand implements BaseHuntedCommand
     public LiteralArgumentBuilder<CommandSourceStack> createCommand()
     {
         LiteralArgumentBuilder<CommandSourceStack> rootCommand = Commands.literal("hunted");
-        rootCommand.then(new StartGameCommand(this.huntedGameManager).createCommand());
-        rootCommand.then(new StopGameCommand(this.huntedGameManager).createCommand());
+        rootCommand.then(new StartGameCommand(this.gameManager).createCommand());
+        rootCommand.then(new StopGameCommand(this.gameManager).createCommand());
+        rootCommand.then(new TeamsCommand().createCommand());
 
         return rootCommand;
     }

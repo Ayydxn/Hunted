@@ -4,6 +4,7 @@ plugins {
     id("java")
     id("io.papermc.paperweight.userdev") version "2.0.0-beta.14"
     id("xyz.jpenilla.run-paper") version "2.3.1"
+    id("com.gradleup.shadow") version "9.0.0-beta8"
 }
 
 version = "${rootProject.property("plugin_version")}-mc${rootProject.property("minecraft_version")}"
@@ -15,6 +16,7 @@ repositories {
     maven("https://repo.papermc.io/repository/maven-public/") {
         name = "PaperMC-Repo"
     }
+
     maven("https://oss.sonatype.org/content/groups/public/") {
         name = "Sonatype"
     }
@@ -24,9 +26,17 @@ repositories {
 
 dependencies {
     paperweight.paperDevBundle("${rootProject.property("minecraft_version")}-${rootProject.property("paper_version")}")
+
+    // (Ayydxn) This is currently unsued right now, however, in the future, this will be used for a GUI that allows players to build out teams
+    // as an alternative to the command interface.
+    implementation("dev.triumphteam:triumph-gui:${rootProject.property("triumph-gui_version")}")
 }
 
 tasks {
+    assemble {
+        dependsOn(shadowJar)
+    }
+
     processResources {
         val propertiesToExpand = mapOf(
             "name" to rootProject.property("plugin_name"),
