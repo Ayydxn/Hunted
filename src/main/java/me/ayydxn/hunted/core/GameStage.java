@@ -1,6 +1,6 @@
 package me.ayydxn.hunted.core;
 
-public enum GameState
+public enum GameStage
 {
     STARTING,
     ACTIVE,

@@ -1,6 +1,7 @@
 package me.ayydxn.hunted.core;
 
 import me.ayydxn.hunted.HuntedPlugin;
+import me.ayydxn.hunted.game.HuntedGameMode;
 import me.ayydxn.hunted.tasks.GameTickTask;
 import me.ayydxn.hunted.teams.TeamManager;
 import me.ayydxn.hunted.util.ServerUtils;
@@ -12,43 +13,53 @@ public class GameManager
     private final HuntedPlugin plugin;
     private final TeamManager teamManager;
 
-    private GameState currentGameState;
-
+    private GameStage currentGameStage;
+    private HuntedGameMode activeGameMode;
 
     public GameManager(HuntedPlugin plugin)
     {
         this.plugin = plugin;
         this.teamManager = new TeamManager();
 
-        this.currentGameState = GameState.ENDED;
+        this.currentGameStage = GameStage.ENDED;
     }
 
-    public void startGame()
+    public void startGame(HuntedGameMode gameMode)
     {
         ServerUtils.broadcastMessage(this.plugin, Component.text("Starting a game of Hunted...", NamedTextColor.GREEN));
 
-        this.currentGameState = GameState.STARTING;
+        this.currentGameStage = GameStage.STARTING;
+        this.activeGameMode = gameMode;
+
+        this.activeGameMode.onPreStart();
 
         GameTickTask gameTickTask = new GameTickTask(this);
         this.plugin.getServer().getScheduler().runTaskTimer(this.plugin, gameTickTask, 0L, 100L);
 
-        this.currentGameState = GameState.ACTIVE;
+        this.activeGameMode.onStart();
+
+        this.currentGameStage = GameStage.ACTIVE;
     }
 
     public void tickGame()
     {
-        ServerUtils.broadcastMessage(this.plugin, Component.text("Ticked Game!", NamedTextColor.GREEN));
+        this.activeGameMode.onTick();
     }
 
     public void endGame()
     {
         ServerUtils.broadcastMessage(this.plugin, Component.text("Ending the current game of Hunted...", NamedTextColor.GREEN));
 
-        this.currentGameState = GameState.ENDING;
+        this.currentGameStage = GameStage.ENDING;
+
+        this.activeGameMode.onPreEnd();
 
         this.teamManager.clearTeams();
 
-        this.currentGameState = GameState.ENDED;
+        this.activeGameMode.onEnd();
+
+        this.currentGameStage = GameStage.ENDED;
+        this.activeGameMode = null;
     }
 
     public TeamManager getTeamManager()
@@ -56,8 +67,8 @@ public class GameManager
         return this.teamManager;
     }
 
-    public GameState getCurrentGameState()
+    public GameStage getCurrentGameStage()
     {
-        return this.currentGameState;
+        return this.currentGameStage;
     }
 }

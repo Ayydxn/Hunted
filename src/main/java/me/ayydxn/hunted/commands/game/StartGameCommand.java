@@ -6,9 +6,11 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
+import me.ayydxn.hunted.HuntedPlugin;
 import me.ayydxn.hunted.commands.base.AbstractHuntedCommand;
 import me.ayydxn.hunted.core.GameManager;
-import me.ayydxn.hunted.core.GameState;
+import me.ayydxn.hunted.core.GameStage;
+import me.ayydxn.hunted.game.GameModeRegistry;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -23,7 +25,6 @@ public class StartGameCommand implements AbstractHuntedCommand
         this.gameManager = gameManager;
     }
 
-    @SuppressWarnings("UnstableApiUsage")
     @Override
     public LiteralArgumentBuilder<CommandSourceStack> createCommand()
     {
@@ -35,13 +36,14 @@ public class StartGameCommand implements AbstractHuntedCommand
         return rootCommand;
     }
 
-    @SuppressWarnings("UnstableApiUsage")
     private static int sendConfirmationMessage(CommandContext<CommandSourceStack> context)
     {
         CommandSender sender = context.getSource().getSender();
         sender.sendMessage(Component.text("-----------------------------------------------------", NamedTextColor.DARK_GRAY));
 
         sender.sendMessage(Component.text("This is a confirmation message about the game you are attempting to start.\n", NamedTextColor.YELLOW));
+
+        sender.sendMessage("Selected Game Mode: TODO");
 
         // TODO: (Ayydxn) Display information about the game here such as all hunters and survivors.
         sender.sendMessage("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
@@ -54,7 +56,6 @@ public class StartGameCommand implements AbstractHuntedCommand
         return Command.SINGLE_SUCCESS;
     }
 
-    @SuppressWarnings("UnstableApiUsage")
     private static int startGame(CommandContext<CommandSourceStack> context, GameManager gameManager)
     {
         CommandSender sender = context.getSource().getSender();
@@ -62,22 +63,22 @@ public class StartGameCommand implements AbstractHuntedCommand
         if (!context.getArgument("confirm", String.class).equals("confirm"))
         {
             sender.sendMessage(Component.text("Did you mean to run \"/hunted start confirm\"?", NamedTextColor.GOLD));
-            return Command.SINGLE_SUCCESS;
+            return -1;
         }
 
-        if (gameManager.getCurrentGameState() == GameState.STARTING)
+        if (gameManager.getCurrentGameStage() == GameStage.STARTING)
         {
             sender.sendMessage(Component.text("You cannot start a match of Minecraft Manhunt while one is already starting!", NamedTextColor.RED));
-            return Command.SINGLE_SUCCESS;
+            return -1;
         }
 
-        if (gameManager.getCurrentGameState() == GameState.ACTIVE)
+        if (gameManager.getCurrentGameStage() == GameStage.ACTIVE)
         {
             sender.sendMessage(Component.text("You cannot start a match of Minecraft Manhunt while one is already active!", NamedTextColor.RED));
-            return Command.SINGLE_SUCCESS;
+            return -1;
         }
 
-        gameManager.startGame();
+        gameManager.startGame(GameModeRegistry.create("classic", HuntedPlugin.getInstance()));
 
         return Command.SINGLE_SUCCESS;
     }

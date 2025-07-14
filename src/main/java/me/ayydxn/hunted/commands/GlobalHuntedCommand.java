@@ -4,6 +4,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import me.ayydxn.hunted.commands.base.AbstractHuntedCommand;
+import me.ayydxn.hunted.commands.game.GameModeCommand;
 import me.ayydxn.hunted.commands.game.StartGameCommand;
 import me.ayydxn.hunted.commands.game.StopGameCommand;
 import me.ayydxn.hunted.commands.teams.TeamsCommand;
@@ -18,7 +19,6 @@ public class GlobalHuntedCommand implements AbstractHuntedCommand
         this.gameManager = gameManager;
     }
 
-    @SuppressWarnings("UnstableApiUsage")
     @Override
     public LiteralArgumentBuilder<CommandSourceStack> createCommand()
     {
@@ -26,6 +26,8 @@ public class GlobalHuntedCommand implements AbstractHuntedCommand
         rootCommand.then(new StartGameCommand(this.gameManager).createCommand());
         rootCommand.then(new StopGameCommand(this.gameManager).createCommand());
         rootCommand.then(new TeamsCommand().createCommand());
+        rootCommand.then(new GameModeCommand().createCommand());
+
 
         return rootCommand;
     }

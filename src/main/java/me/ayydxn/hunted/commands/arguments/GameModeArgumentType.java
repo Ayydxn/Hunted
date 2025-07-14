@@ -8,45 +8,35 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import io.papermc.paper.command.brigadier.argument.CustomArgumentType;
-import me.ayydxn.hunted.teams.Teams;
+import me.ayydxn.hunted.HuntedPlugin;
+import me.ayydxn.hunted.game.GameModeRegistry;
+import me.ayydxn.hunted.game.HuntedGameMode;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 
-public class TeamArgumentType implements CustomArgumentType<Teams, String>
+public class GameModeArgumentType implements CustomArgumentType<HuntedGameMode, String>
 {
-    private TeamArgumentType()
+    private GameModeArgumentType()
     {
     }
 
-    public static TeamArgumentType huntedTeam()
+    public static GameModeArgumentType huntedGameMode()
     {
-        return new TeamArgumentType();
+        return new GameModeArgumentType();
     }
 
     @Override
-    public @NotNull Teams parse(StringReader stringReader) throws CommandSyntaxException
+    public @NotNull HuntedGameMode parse(StringReader reader) throws CommandSyntaxException
     {
-        return switch (stringReader.readString())
-        {
-            case "hunters" -> Teams.HUNTERS;
-            case "survivors" -> Teams.SURVIVORS;
-            case "spectators" -> Teams.SPECTATORS;
-            default -> Teams.UNKNOWN;
-        };
+        return GameModeRegistry.create(reader.readString(), HuntedPlugin.getInstance());
     }
 
     @Override
     public <S> @NotNull CompletableFuture<Suggestions> listSuggestions(@NotNull CommandContext<S> context, @NotNull SuggestionsBuilder builder)
     {
-        for (Teams huntedTeam : Teams.values())
-        {
-            if (huntedTeam == Teams.UNKNOWN)
-                continue;
-
-            builder.suggest(huntedTeam.getName().toLowerCase(Locale.ROOT));
-        }
+        for (var gameModeID : GameModeRegistry.getRegisteredGameModes().keySet())
+            builder.suggest(gameModeID);
 
         return builder.buildFuture();
     }

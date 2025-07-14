@@ -8,7 +8,7 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import me.ayydxn.hunted.commands.base.AbstractHuntedCommand;
 import me.ayydxn.hunted.core.GameManager;
-import me.ayydxn.hunted.core.GameState;
+import me.ayydxn.hunted.core.GameStage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -44,7 +44,7 @@ public class StopGameCommand implements AbstractHuntedCommand
 
         sender.sendMessage(Component.text("This is a confirmation message about the game you are attempting to stop.\n", NamedTextColor.YELLOW));
         sender.sendMessage(Component.text("\nIf you are sure you would like to stop the game, please run:\n", NamedTextColor.YELLOW)
-                .append(Component.text("/hunted sop confirm", NamedTextColor.GOLD).decorate(TextDecoration.BOLD)));
+                .append(Component.text("/hunted stop confirm", NamedTextColor.GOLD).decorate(TextDecoration.BOLD)));
 
         sender.sendMessage(Component.text("-----------------------------------------------------", NamedTextColor.DARK_GRAY));
 
@@ -62,13 +62,13 @@ public class StopGameCommand implements AbstractHuntedCommand
             return Command.SINGLE_SUCCESS;
         }
 
-        if (gameManager.getCurrentGameState() == GameState.ENDING)
+        if (gameManager.getCurrentGameStage() == GameStage.ENDING)
         {
             sender.sendMessage(Component.text("You cannot stop a match of Minecraft Manhunt while one is ending!", NamedTextColor.RED));
             return Command.SINGLE_SUCCESS;
         }
 
-        if (gameManager.getCurrentGameState() == GameState.ENDED)
+        if (gameManager.getCurrentGameStage() == GameStage.ENDED)
         {
             sender.sendMessage(Component.text("You cannot stop a match of Minecraft Manhunt while one isn't active!", NamedTextColor.RED));
             return Command.SINGLE_SUCCESS;

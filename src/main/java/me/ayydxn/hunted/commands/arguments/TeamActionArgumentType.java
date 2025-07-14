@@ -13,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
 
-@SuppressWarnings("UnstableApiUsage")
 public class TeamActionArgumentType implements CustomArgumentType<TeamActions, String>
 {
     private TeamActionArgumentType()

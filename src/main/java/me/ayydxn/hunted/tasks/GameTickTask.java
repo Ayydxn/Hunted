@@ -1,7 +1,7 @@
 package me.ayydxn.hunted.tasks;
 
 import me.ayydxn.hunted.core.GameManager;
-import me.ayydxn.hunted.core.GameState;
+import me.ayydxn.hunted.core.GameStage;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.function.Consumer;
@@ -18,8 +18,8 @@ public class GameTickTask implements Consumer<BukkitTask>
     @Override
     public void accept(BukkitTask bukkitTask)
     {
-        GameState currentGameState = this.gameManager.getCurrentGameState();
-        if (currentGameState == GameState.ENDING || currentGameState == GameState.ENDED)
+        GameStage currentGameStage = this.gameManager.getCurrentGameStage();
+        if (currentGameStage == GameStage.ENDING || currentGameStage == GameStage.ENDED)
         {
             bukkitTask.cancel();
             return;
