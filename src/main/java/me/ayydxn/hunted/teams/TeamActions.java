@@ -17,9 +17,17 @@ public enum TeamActions
             return;
         }
 
+        if (TeamActions.isPlayerAlreadyInADifferentTeam(targetPlayer, targetTeam))
+        {
+            actionExecutor.sendMessage(Component.text(String.format("Player %s is already a part of a different team %s!", targetPlayer.getName(), targetTeam.getName()),
+                    NamedTextColor.RED));
+
+            return;
+        }
+
         targetTeam.addPlayer(targetPlayer);
 
-        actionExecutor.sendMessage(Component.text(String.format("%s have been added to team %s!", targetPlayer.getName(), targetTeam.getName()),
+        actionExecutor.sendMessage(Component.text(String.format("%s has been added to team %s!", targetPlayer.getName(), targetTeam.getName()),
                 NamedTextColor.GREEN));
 
         targetPlayer.sendMessage(Component.text(String.format("You have been added to team %s!", targetTeam.getName()), NamedTextColor.GREEN));
@@ -37,7 +45,7 @@ public enum TeamActions
 
         targetTeam.removePlayer(targetPlayer);
 
-        actionExecutor.sendMessage(Component.text(String.format("%s have been removed from team %s!", targetPlayer.getName(), targetTeam.getName()),
+        actionExecutor.sendMessage(Component.text(String.format("%s has been removed from team %s!", targetPlayer.getName(), targetTeam.getName()),
                 NamedTextColor.GREEN));
 
         targetPlayer.sendMessage(Component.text(String.format("You have been removed from team %s!", targetTeam.getName()), NamedTextColor.RED));
@@ -62,6 +70,21 @@ public enum TeamActions
     public ActionFunction getActionFunction()
     {
         return this.actionFunction;
+    }
+
+    private static boolean isPlayerAlreadyInADifferentTeam(Player joiningPlayer, HuntedTeam requestedTeam)
+    {
+        boolean isPlayerAlreadyInADifferentTeam = false;
+
+        for (Teams team : Teams.values())
+        {
+            if (team == Teams.UNKNOWN || team.getHandle().getName().equals(requestedTeam.getName()))
+                continue;
+
+            isPlayerAlreadyInADifferentTeam = team.getHandle().getMembers().contains(joiningPlayer);
+        }
+
+        return isPlayerAlreadyInADifferentTeam;
     }
 
     @FunctionalInterface

@@ -7,8 +7,8 @@ import com.mojang.brigadier.context.CommandContext;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import me.ayydxn.hunted.commands.base.AbstractHuntedCommand;
-import me.ayydxn.hunted.core.GameManager;
-import me.ayydxn.hunted.core.GameStage;
+import me.ayydxn.hunted.game.GameManager;
+import me.ayydxn.hunted.game.MatchState;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -62,13 +62,13 @@ public class StopGameCommand implements AbstractHuntedCommand
             return Command.SINGLE_SUCCESS;
         }
 
-        if (gameManager.getCurrentGameStage() == GameStage.ENDING)
+        if (gameManager.getCurrentMatchState() == MatchState.ENDING)
         {
             sender.sendMessage(Component.text("You cannot stop a match of Minecraft Manhunt while one is ending!", NamedTextColor.RED));
             return Command.SINGLE_SUCCESS;
         }
 
-        if (gameManager.getCurrentGameStage() == GameStage.ENDED)
+        if (gameManager.getCurrentMatchState() == MatchState.ENDED)
         {
             sender.sendMessage(Component.text("You cannot stop a match of Minecraft Manhunt while one isn't active!", NamedTextColor.RED));
             return Command.SINGLE_SUCCESS;

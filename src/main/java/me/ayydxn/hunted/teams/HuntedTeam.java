@@ -2,11 +2,13 @@ package me.ayydxn.hunted.teams;
 
 import com.google.common.collect.Lists;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
+import javax.inject.Named;
 import java.util.List;
 
 public class HuntedTeam
@@ -14,13 +16,15 @@ public class HuntedTeam
     private final List<Player> players;
     private final String name;
     private final Component tag;
+    private final NamedTextColor teamColor;
     private final Team scoreboardTeam;
 
-    public HuntedTeam(String name, Component tag)
+    public HuntedTeam(String name, Component tag, NamedTextColor color)
     {
         this.players = Lists.newArrayList();
         this.name = name;
-        this.tag = tag;
+        this.tag = tag.color(color);
+        this.teamColor = color;
 
         // We use this to get the prefix that appears next to the player's name in accordance with their team.
         this.scoreboardTeam = this.createScoreboardTeam();
@@ -64,5 +68,10 @@ public class HuntedTeam
     public String getName()
     {
         return this.name;
+    }
+
+    public NamedTextColor getTeamColor()
+    {
+        return this.teamColor;
     }
 }

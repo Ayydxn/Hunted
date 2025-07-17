@@ -2,7 +2,7 @@ package me.ayydxn.hunted;
 
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import me.ayydxn.hunted.commands.GlobalHuntedCommand;
-import me.ayydxn.hunted.core.GameManager;
+import me.ayydxn.hunted.game.GameManager;
 import me.ayydxn.hunted.game.GameModeRegistry;
 import me.ayydxn.hunted.game.custom.mode.ClassicGameMode;
 import org.apache.logging.log4j.LogManager;
@@ -24,12 +24,12 @@ public final class HuntedPlugin extends JavaPlugin
 
         LOGGER.info("Initializing Hunted... (Version: {})", this.getPluginMeta().getVersion());
 
+        this.registerGameModes();
+
         this.gameManager = new GameManager(this);
 
         this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> commands.registrar()
                 .register(new GlobalHuntedCommand(this.gameManager).createCommand().build()));
-
-        this.registerGameModes();
     }
 
     @Override
@@ -58,5 +58,15 @@ public final class HuntedPlugin extends JavaPlugin
             throw new IllegalStateException("Tried to access an instance of Hunted when one wasn't available!");
 
         return INSTANCE;
+    }
+
+    /**
+     * Returns the currently active instance of the game manager.
+     *
+     * @return The current instance of the game manager.
+     */
+    public GameManager getGameManager()
+    {
+        return this.gameManager;
     }
 }

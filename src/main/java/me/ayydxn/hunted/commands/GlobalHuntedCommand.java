@@ -8,7 +8,7 @@ import me.ayydxn.hunted.commands.game.GameModeCommand;
 import me.ayydxn.hunted.commands.game.StartGameCommand;
 import me.ayydxn.hunted.commands.game.StopGameCommand;
 import me.ayydxn.hunted.commands.teams.TeamsCommand;
-import me.ayydxn.hunted.core.GameManager;
+import me.ayydxn.hunted.game.GameManager;
 
 public class GlobalHuntedCommand implements AbstractHuntedCommand
 {

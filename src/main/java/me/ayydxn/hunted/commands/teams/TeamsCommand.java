@@ -10,7 +10,11 @@ import me.ayydxn.hunted.commands.arguments.TeamArgumentType;
 import me.ayydxn.hunted.commands.arguments.TeamActionArgumentType;
 import me.ayydxn.hunted.commands.base.AbstractHuntedCommand;
 import me.ayydxn.hunted.teams.TeamActions;
+import me.ayydxn.hunted.teams.TeamUtils;
 import me.ayydxn.hunted.teams.Teams;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -39,6 +43,20 @@ public class TeamsCommand implements AbstractHuntedCommand
 
                             return Command.SINGLE_SUCCESS;
                         }))));
+
+        rootCommand.then(Commands.literal("list").executes(context ->
+        {
+            for (Teams team : Teams.values())
+            {
+                if (team == Teams.UNKNOWN)
+                    continue;
+
+                Component teamMembersComponent = TeamUtils.getTeamMembers(team);
+                context.getSource().getSender().sendMessage(teamMembersComponent);
+            }
+
+            return Command.SINGLE_SUCCESS;
+        }));
 
         return rootCommand;
     }

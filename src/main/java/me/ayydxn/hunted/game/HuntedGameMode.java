@@ -2,7 +2,6 @@ package me.ayydxn.hunted.game;
 
 import io.papermc.paper.event.connection.PlayerConnectionValidateLoginEvent;
 import me.ayydxn.hunted.HuntedPlugin;
-import me.ayydxn.hunted.core.GameStage;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.entity.Player;
@@ -34,7 +33,7 @@ public abstract class HuntedGameMode implements Listener
 
     /**
      * @param plugin An instance of Hunted
-     * @param gameState The game state implementation associated with this game mode. If a custom game state isn't used, you can pass a new instance of
+     * @param gameState The game state implementation associated with this game mode. If a custom game state isn't used, you can simply pass a new instance of {@link HuntedGameState}
      */
     public HuntedGameMode(HuntedPlugin plugin, HuntedGameState gameState)
     {
@@ -49,7 +48,7 @@ public abstract class HuntedGameMode implements Listener
      */
     public void onPreStart()
     {
-        this.gameState.setGameStage(GameStage.STARTING);
+        this.gameState.setGameStage(MatchState.STARTING);
     }
 
     /**
@@ -57,7 +56,7 @@ public abstract class HuntedGameMode implements Listener
      */
     public void onStart()
     {
-        this.gameState.setGameStage(GameStage.ACTIVE);
+        this.gameState.setGameStage(MatchState.ACTIVE);
     }
 
     /**
@@ -73,7 +72,7 @@ public abstract class HuntedGameMode implements Listener
      */
     public void onPreEnd()
     {
-        this.gameState.setGameStage(GameStage.ENDING);
+        this.gameState.setGameStage(MatchState.ENDING);
     }
 
     /**
@@ -81,7 +80,7 @@ public abstract class HuntedGameMode implements Listener
      */
     public void onEnd()
     {
-        this.gameState.setGameStage(GameStage.ENDED);
+        this.gameState.setGameStage(MatchState.ENDED);
         this.gameState.reset();
     }
 
@@ -95,8 +94,14 @@ public abstract class HuntedGameMode implements Listener
      */
     public abstract void onPlayerLeave(Player player);
 
+    /**
+     * @return Returns the name of the game mode as it is displayed in-game.
+     */
     public abstract String getDisplayName();
 
+    /**
+     * @return Returns the description of the game mode.
+     */
     public abstract String getDescription();
 
     @SuppressWarnings("UnstableApiUsage")
@@ -107,13 +112,13 @@ public abstract class HuntedGameMode implements Listener
                 Component.text(String.format("You cannot join while a game of Hunted is %s! Please wait until the game has %s.", presentTenseGameState, pastTenseGameState))
                         .color(NamedTextColor.RED);
 
-        if (this.gameState.getGameStage() == GameStage.STARTING)
+        if (this.gameState.getGameStage() == MatchState.STARTING)
         {
             playerConnectionValidateLoginEvent.kickMessage(disconnectComponent.apply("starting", "started"));
             return;
         }
 
-        if (this.gameState.getGameStage() == GameStage.ENDING)
+        if (this.gameState.getGameStage() == MatchState.ENDING)
         {
             playerConnectionValidateLoginEvent.kickMessage(disconnectComponent.apply("ending", "ended"));
             return;
@@ -125,14 +130,14 @@ public abstract class HuntedGameMode implements Listener
     @EventHandler
     private void onPlayerJoinImpl(PlayerJoinEvent playerJoinEvent)
     {
-        if (this.gameState.getGameStage() == GameStage.ACTIVE)
+        if (this.gameState.getGameStage() == MatchState.ACTIVE)
             this.onPlayerJoin(playerJoinEvent.getPlayer());
     }
 
     @EventHandler
     private void onPlayerLeaveImpl(PlayerQuitEvent playerQuitEvent)
     {
-        if (this.gameState.getGameStage() == GameStage.ACTIVE)
+        if (this.gameState.getGameStage() == MatchState.ACTIVE)
             this.onPlayerLeave(playerQuitEvent.getPlayer());
     }
 }

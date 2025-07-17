@@ -8,6 +8,7 @@ import io.papermc.paper.command.brigadier.Commands;
 import me.ayydxn.hunted.HuntedPlugin;
 import me.ayydxn.hunted.commands.arguments.GameModeArgumentType;
 import me.ayydxn.hunted.commands.base.AbstractHuntedCommand;
+import me.ayydxn.hunted.game.GameManager;
 import me.ayydxn.hunted.game.GameModeRegistry;
 import me.ayydxn.hunted.game.HuntedGameMode;
 import net.kyori.adventure.text.Component;
@@ -34,7 +35,13 @@ public class GameModeCommand implements AbstractHuntedCommand
     {
         HuntedGameMode newGameMode = commandContext.getArgument("gameMode", HuntedGameMode.class);
 
-        commandContext.getSource().getSender().sendMessage("Selected Game Mode: " + newGameMode.getDisplayName());
+        GameManager gameManager = HuntedPlugin.getInstance().getGameManager();
+        gameManager.getMatchSettings().selectedGameMode.setValue(newGameMode);
+
+        Component selectedGameModeMessage = Component.text("Selected Game Mode: ", NamedTextColor.GREEN)
+                .append(Component.text(newGameMode.getDisplayName(), NamedTextColor.GOLD));
+
+        commandContext.getSource().getSender().sendMessage(selectedGameModeMessage);
 
         return Command.SINGLE_SUCCESS;
     }

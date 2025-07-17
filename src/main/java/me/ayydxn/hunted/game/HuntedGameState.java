@@ -1,12 +1,10 @@
 package me.ayydxn.hunted.game;
 
 import com.google.common.collect.Sets;
-import me.ayydxn.hunted.core.GameStage;
 import me.ayydxn.hunted.teams.Teams;
 import org.apache.commons.lang3.Validate;
 import org.bukkit.entity.Player;
 
-import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
 
@@ -26,7 +24,7 @@ public class HuntedGameState
     private final Set<UUID> survivors = Sets.newHashSet();
     private final Set<UUID> hunters = Sets.newHashSet();
     private final Set<UUID> spectators = Sets.newHashSet();
-    private GameStage gameStage = GameStage.ENDED;
+    private MatchState matchState = MatchState.ENDED;
 
     public void onTick()
     {
@@ -38,73 +36,89 @@ public class HuntedGameState
         this.hunters.clear();
         this.spectators.clear();
 
-        this.gameStage = GameStage.ENDED;
+        this.matchState = MatchState.ENDED;
     }
 
-    public void addSurvivor(Player player)
+    public void addPlayer(Player player, Teams team)
     {
-        Validate.isTrue(this.survivors.add(player.getUniqueId()), String.format("Player '%s' is already a survivor!", player.displayName()));
+        String playerName = player.getName();
 
-        Teams.SURVIVORS.getHandle().addPlayer(player);
+        switch (team)
+        {
+            case SURVIVORS ->
+            {
+                Validate.isTrue(this.survivors.add(player.getUniqueId()), String.format("Player '%s' is already a survivor!", playerName));
+
+                Teams.SURVIVORS.getHandle().addPlayer(player);
+            }
+
+            case HUNTERS ->
+            {
+                Validate.isTrue(this.hunters.add(player.getUniqueId()), String.format("Player '%s' is already a hunter!", player));
+
+                Teams.HUNTERS.getHandle().addPlayer(player);
+            }
+
+            case SPECTATORS ->
+            {
+                Validate.isTrue(this.spectators.add(player.getUniqueId()), String.format("Player '%s' is already a spectator!", player));
+
+                Teams.SPECTATORS.getHandle().addPlayer(player);
+            }
+
+            default -> throw new IllegalArgumentException(String.format("Failed to add player to unsupported team '%s'!", team.getName()));
+        }
     }
 
-    public void removeSurvivor(Player player)
+    public void removePlayer(Player player, Teams team)
     {
-        Validate.isTrue(this.survivors.remove(player.getUniqueId()), String.format("Player '%s' was not a survivor!", player.displayName()));
+        String playerName = player.getName();
 
-        Teams.SURVIVORS.getHandle().removePlayer(player);
+        switch (team)
+        {
+            case SURVIVORS ->
+            {
+                Validate.isTrue(this.survivors.remove(player.getUniqueId()), String.format("Player '%s' was not a survivor!", player.displayName()));
+
+                Teams.SURVIVORS.getHandle().removePlayer(player);
+            }
+
+            case HUNTERS ->
+            {
+                Validate.isTrue(this.hunters.remove(player.getUniqueId()), String.format("Player '%s' was not a hunter!", player.displayName()));
+
+                Teams.HUNTERS.getHandle().removePlayer(player);
+            }
+
+            case SPECTATORS ->
+            {
+                Validate.isTrue(this.spectators.remove(player.getUniqueId()), String.format("Player '%s' was not a spectator!", player.displayName()));
+
+                Teams.SPECTATORS.getHandle().removePlayer(player);
+            }
+
+            default -> throw new IllegalArgumentException(String.format("Failed to add player to unsupported team '%s'!", team.getName()));
+        }
     }
 
-    public void addHunter(Player player)
+    public Set<UUID> getPlayersInTeam(Teams team)
     {
-        Validate.isTrue(this.hunters.add(player.getUniqueId()), String.format("Player '%s' is already a hunter!", player.displayName()));
-
-        Teams.HUNTERS.getHandle().addPlayer(player);
+        return switch (team)
+        {
+            case SURVIVORS -> this.survivors;
+            case HUNTERS -> this.hunters;
+            case SPECTATORS -> this.spectators;
+            default -> throw new IllegalArgumentException(String.format("Failed to get players for unsupported team '%s'", team.getName()));
+        };
     }
 
-    public void removeHunter(Player player)
+    public MatchState getGameStage()
     {
-        Validate.isTrue(this.hunters.remove(player.getUniqueId()), String.format("Player '%s' was not a hunter!", player.displayName()));
-
-        Teams.HUNTERS.getHandle().removePlayer(player);
+        return this.matchState;
     }
 
-    public void addSpectator(Player player)
+    public void setGameStage(MatchState newMatchState)
     {
-        Validate.isTrue(this.spectators.add(player.getUniqueId()), String.format("Player '%s' is already a spectator!", player.displayName()));
-
-        Teams.SPECTATORS.getHandle().addPlayer(player);
-    }
-
-    public void removeSpectator(Player player)
-    {
-        Validate.isTrue(this.spectators.remove(player.getUniqueId()), String.format("Player '%s' was not a spectator!", player.displayName()));
-
-        Teams.SPECTATORS.getHandle().removePlayer(player);
-    }
-
-    public Set<UUID> getSurvivors()
-    {
-        return Collections.unmodifiableSet(this.survivors);
-    }
-
-    public Set<UUID> getHunters()
-    {
-        return Collections.unmodifiableSet(this.hunters);
-    }
-
-    public Set<UUID> getSpectators()
-    {
-        return Collections.unmodifiableSet(this.spectators);
-    }
-
-    public GameStage getGameStage()
-    {
-        return this.gameStage;
-    }
-
-    public void setGameStage(GameStage newGameStage)
-    {
-        this.gameStage = newGameStage;
+        this.matchState = newMatchState;
     }
 }

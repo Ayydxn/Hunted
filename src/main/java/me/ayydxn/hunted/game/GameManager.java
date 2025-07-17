@@ -1,7 +1,7 @@
-package me.ayydxn.hunted.core;
+package me.ayydxn.hunted.game;
 
 import me.ayydxn.hunted.HuntedPlugin;
-import me.ayydxn.hunted.game.HuntedGameMode;
+import me.ayydxn.hunted.game.config.HuntedMatchSettings;
 import me.ayydxn.hunted.tasks.GameTickTask;
 import me.ayydxn.hunted.teams.TeamManager;
 import me.ayydxn.hunted.util.ServerUtils;
@@ -13,7 +13,8 @@ public class GameManager
     private final HuntedPlugin plugin;
     private final TeamManager teamManager;
 
-    private GameStage currentGameStage;
+    private HuntedMatchSettings matchSettings;
+    private MatchState currentMatchState;
     private HuntedGameMode activeGameMode;
 
     public GameManager(HuntedPlugin plugin)
@@ -21,14 +22,16 @@ public class GameManager
         this.plugin = plugin;
         this.teamManager = new TeamManager();
 
-        this.currentGameStage = GameStage.ENDED;
+        this.matchSettings = HuntedMatchSettings.defaults();
+        this.currentMatchState = MatchState.ENDED;
+        this.activeGameMode = null;
     }
 
     public void startGame(HuntedGameMode gameMode)
     {
         ServerUtils.broadcastMessage(this.plugin, Component.text("Starting a game of Hunted...", NamedTextColor.GREEN));
 
-        this.currentGameStage = GameStage.STARTING;
+        this.currentMatchState = MatchState.STARTING;
         this.activeGameMode = gameMode;
 
         this.activeGameMode.onPreStart();
@@ -38,7 +41,7 @@ public class GameManager
 
         this.activeGameMode.onStart();
 
-        this.currentGameStage = GameStage.ACTIVE;
+        this.currentMatchState = MatchState.ACTIVE;
     }
 
     public void tickGame()
@@ -50,25 +53,31 @@ public class GameManager
     {
         ServerUtils.broadcastMessage(this.plugin, Component.text("Ending the current game of Hunted...", NamedTextColor.GREEN));
 
-        this.currentGameStage = GameStage.ENDING;
+        this.currentMatchState = MatchState.ENDING;
 
         this.activeGameMode.onPreEnd();
 
         this.teamManager.clearTeams();
+        this.matchSettings = HuntedMatchSettings.defaults();
 
         this.activeGameMode.onEnd();
 
-        this.currentGameStage = GameStage.ENDED;
+        this.currentMatchState = MatchState.ENDED;
         this.activeGameMode = null;
     }
 
-    public TeamManager getTeamManager()
+    public HuntedMatchSettings getMatchSettings()
     {
-        return this.teamManager;
+        return this.matchSettings;
     }
 
-    public GameStage getCurrentGameStage()
+    public MatchState getCurrentMatchState()
     {
-        return this.currentGameStage;
+        return this.currentMatchState;
+    }
+
+    public HuntedGameState getGameState()
+    {
+        return this.activeGameMode.gameState;
     }
 }

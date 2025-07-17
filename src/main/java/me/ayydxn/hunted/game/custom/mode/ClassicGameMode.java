@@ -7,6 +7,8 @@ import org.bukkit.entity.Player;
 
 public class ClassicGameMode extends HuntedGameMode
 {
+    public static final String ID = "classic";
+
     public ClassicGameMode(HuntedPlugin plugin)
     {
         super(plugin, new HuntedGameState());
