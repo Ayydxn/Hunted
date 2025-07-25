@@ -6,24 +6,16 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
-import me.ayydxn.hunted.HuntedPlugin;
 import me.ayydxn.hunted.commands.base.AbstractHuntedCommand;
 import me.ayydxn.hunted.game.GameManager;
 import me.ayydxn.hunted.game.MatchState;
-import me.ayydxn.hunted.game.GameModeRegistry;
 import me.ayydxn.hunted.game.config.HuntedMatchSettings;
 import me.ayydxn.hunted.teams.TeamUtils;
 import me.ayydxn.hunted.teams.Teams;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.ComponentBuilder;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-
-import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 public class StartGameCommand implements AbstractHuntedCommand
 {
@@ -62,7 +54,7 @@ public class StartGameCommand implements AbstractHuntedCommand
             if (team == Teams.UNKNOWN)
                 continue;
 
-            Component teamMembersComponent = TeamUtils.getTeamMembers(team);
+            Component teamMembersComponent = TeamUtils.getTeamMembersText(team);
             sender.sendMessage(teamMembersComponent);
         }
 

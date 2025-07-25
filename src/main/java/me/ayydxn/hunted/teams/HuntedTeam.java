@@ -8,7 +8,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
-import javax.inject.Named;
 import java.util.List;
 
 public class HuntedTeam
@@ -57,6 +56,7 @@ public class HuntedTeam
 
     public void disband()
     {
+        this.players.forEach(player -> this.scoreboardTeam.removeEntry(player.getName()));
         this.players.clear();
     }
 

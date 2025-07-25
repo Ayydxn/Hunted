@@ -6,13 +6,14 @@ import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.entity.Player;
 
 import java.util.List;
+import java.util.Set;
 
 public class TeamUtils
 {
     /**
      * Returns a stylized component of all the members within a team.
      */
-    public static Component getTeamMembers(Teams team)
+    public static Component getTeamMembersText(Teams team)
     {
         Component teamName = Component.text(team.getName(), team.getHandle().getTeamColor())
                 .decorate(TextDecoration.BOLD, TextDecoration.UNDERLINED);
@@ -28,7 +29,8 @@ public class TeamUtils
             for (Player teamMember : teamMembers)
             {
                 String teamMemberEntry = String.format("- %s", teamMember.getName());
-                builder.append(Component.text(teamMemberEntry, NamedTextColor.GOLD));
+                builder.append(Component.text(teamMemberEntry, NamedTextColor.GOLD)
+                        .decorations(Set.of(TextDecoration.BOLD, TextDecoration.UNDERLINED), false));
             }
 
             builder.append(Component.text("\n"));

@@ -21,15 +21,18 @@ repositories {
         name = "Sonatype"
     }
 
+    maven("https://repo.onarandombox.com/content/groups/public/") {
+        name = "onarandombox"
+    }
+
     mavenCentral()
 }
 
 dependencies {
     paperweight.paperDevBundle("${rootProject.property("minecraft_version")}-${rootProject.property("paper_version")}")
 
-    // (Ayydxn) This is currently unsued right now, however, in the future, this will be used for a GUI that allows players to build out teams
-    // as an alternative to the command interface.
-    implementation("dev.triumphteam:triumph-gui:${rootProject.property("triumph-gui_version")}")
+    compileOnly("org.mvplugins.multiverse.core:multiverse-core:${rootProject.property("multiverse_core_version")}")
+    compileOnly("org.mvplugins.multiverse.netherportals:multiverse-netherportals:${rootProject.property("multiverse_netherportals_version")}")
 }
 
 tasks {

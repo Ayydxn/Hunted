@@ -13,8 +13,6 @@ import me.ayydxn.hunted.teams.TeamActions;
 import me.ayydxn.hunted.teams.TeamUtils;
 import me.ayydxn.hunted.teams.Teams;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -51,7 +49,7 @@ public class TeamsCommand implements AbstractHuntedCommand
                 if (team == Teams.UNKNOWN)
                     continue;
 
-                Component teamMembersComponent = TeamUtils.getTeamMembers(team);
+                Component teamMembersComponent = TeamUtils.getTeamMembersText(team);
                 context.getSource().getSender().sendMessage(teamMembersComponent);
             }
 

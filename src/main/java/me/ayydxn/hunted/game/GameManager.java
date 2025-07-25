@@ -1,12 +1,24 @@
 package me.ayydxn.hunted.game;
 
+import com.google.common.collect.ImmutableList;
 import me.ayydxn.hunted.HuntedPlugin;
 import me.ayydxn.hunted.game.config.HuntedMatchSettings;
+import me.ayydxn.hunted.game.world.GameWorld;
 import me.ayydxn.hunted.tasks.GameTickTask;
 import me.ayydxn.hunted.teams.TeamManager;
+import me.ayydxn.hunted.teams.Teams;
 import me.ayydxn.hunted.util.ServerUtils;
+import me.ayydxn.hunted.world.BiomeUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.minecraft.util.parsing.packrat.NamedRule;
+import org.bukkit.Location;
+import org.bukkit.World;
+import org.bukkit.block.Biome;
+
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class GameManager
 {
@@ -15,6 +27,7 @@ public class GameManager
 
     private HuntedMatchSettings matchSettings;
     private MatchState currentMatchState;
+    private GameWorld activeGameWorld;
     private HuntedGameMode activeGameMode;
 
     public GameManager(HuntedPlugin plugin)
@@ -39,7 +52,21 @@ public class GameManager
         GameTickTask gameTickTask = new GameTickTask(this);
         this.plugin.getServer().getScheduler().runTaskTimer(this.plugin, gameTickTask, 0L, 100L);
 
+        this.activeGameWorld = new GameWorld(String.format("huntedGameWorld_active_%s", UUID.randomUUID()));
+        this.activeGameWorld.create();
+
+        // TODO: Perform the following when preparing to start a new game (X = Completed)
+        // - Generate a new world (X)
+        // - Determine what biome each team will spawn in (Spectators will be left with either team at random)
+        // - Transport all players to said world
+        // - Restrict all player movement
+        // - Start a countdown
+
         this.activeGameMode.onStart();
+
+        // TODO: Perform the following once the countdown ends and the game begins (X = Completed):
+        // - Unrestrict all player movement
+        // - Pass all control to the game mode so that it can do whatever other setup it needs to so that it can be played properly.
 
         this.currentMatchState = MatchState.ACTIVE;
     }
@@ -64,6 +91,14 @@ public class GameManager
 
         this.currentMatchState = MatchState.ENDED;
         this.activeGameMode = null;
+
+        this.activeGameWorld.unload();
+        this.activeGameMode = null;
+    }
+
+    public TeamManager getTeamManager()
+    {
+        return this.teamManager;
     }
 
     public HuntedMatchSettings getMatchSettings()
@@ -74,10 +109,5 @@ public class GameManager
     public MatchState getCurrentMatchState()
     {
         return this.currentMatchState;
-    }
-
-    public HuntedGameState getGameState()
-    {
-        return this.activeGameMode.gameState;
     }
 }
