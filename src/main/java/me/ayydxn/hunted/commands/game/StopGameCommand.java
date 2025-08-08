@@ -14,6 +14,9 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.command.CommandSender;
 
+/**
+ * The command responsible for stopping a currently running game of Hunted.
+ */
 public class StopGameCommand implements AbstractHuntedCommand
 {
     private final GameManager gameManager;
@@ -23,19 +26,20 @@ public class StopGameCommand implements AbstractHuntedCommand
         this.gameManager = gameManager;
     }
 
-    @SuppressWarnings("UnstableApiUsage")
     @Override
     public LiteralArgumentBuilder<CommandSourceStack> createCommand()
     {
         LiteralArgumentBuilder<CommandSourceStack> rootCommand = Commands.literal("stop");
+        // Display a confirmation message so that user can be sure if they want to stop the game or not.
         rootCommand.executes(StopGameCommand::sendConfirmationMessage);
+
+        // Actually stops the game
         rootCommand.then(Commands.argument("confirm", StringArgumentType.word())
                 .executes(context -> StopGameCommand.stopGame(context, this.gameManager)));
 
         return rootCommand;
     }
 
-    @SuppressWarnings("UnstableApiUsage")
     private static int sendConfirmationMessage(CommandContext<CommandSourceStack> context)
     {
         CommandSender sender = context.getSource().getSender();
@@ -51,29 +55,31 @@ public class StopGameCommand implements AbstractHuntedCommand
         return Command.SINGLE_SUCCESS;
     }
 
-    @SuppressWarnings("UnstableApiUsage")
     private static int stopGame(CommandContext<CommandSourceStack> context, GameManager gameManager)
     {
         CommandSender sender = context.getSource().getSender();
 
+        // // Check and make sure the user actually wants to stop the current game.
         if (!context.getArgument("confirm", String.class).equals("confirm"))
         {
             sender.sendMessage(Component.text("Did you mean to run \"/hunted stop confirm\"?", NamedTextColor.GOLD));
-            return Command.SINGLE_SUCCESS;
+            return -1;
         }
 
+        // To prevent players from stopping a non-existent game.
         if (gameManager.getCurrentMatchState() == MatchState.ENDING)
         {
             sender.sendMessage(Component.text("You cannot stop a match of Minecraft Manhunt while one is ending!", NamedTextColor.RED));
-            return Command.SINGLE_SUCCESS;
+            return -1;
         }
 
         if (gameManager.getCurrentMatchState() == MatchState.ENDED)
         {
             sender.sendMessage(Component.text("You cannot stop a match of Minecraft Manhunt while one isn't active!", NamedTextColor.RED));
-            return Command.SINGLE_SUCCESS;
+            return -1;
         }
 
+        // Actually end the game.
         gameManager.endGame();
 
         return Command.SINGLE_SUCCESS;

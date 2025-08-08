@@ -15,12 +15,20 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * An {@link ArgumentType} implementation which allows us to use {@link HuntedGameMode}s in commands as arguments.
+ */
 public class GameModeArgumentType implements CustomArgumentType<HuntedGameMode, String>
 {
     private GameModeArgumentType()
     {
     }
 
+    /**
+     * Creates and returns a new instance of this class.
+     *
+     * @return A new instance of {@link GameModeArgumentType}
+     */
     public static GameModeArgumentType huntedGameMode()
     {
         return new GameModeArgumentType();

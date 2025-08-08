@@ -5,6 +5,10 @@ import me.ayydxn.hunted.game.HuntedGameMode;
 import me.ayydxn.hunted.game.HuntedGameState;
 import org.bukkit.entity.Player;
 
+/**
+ * The classic game mode represents normal Minecraft Manhunt gameplay as you would know it from YouTubers like Dream. Therefore, it has little going for it
+ * gameplay wise.
+ */
 public class ClassicGameMode extends HuntedGameMode
 {
     public static final String ID = "classic";

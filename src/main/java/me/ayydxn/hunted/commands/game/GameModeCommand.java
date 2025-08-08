@@ -18,14 +18,23 @@ import org.bukkit.command.CommandSender;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * The root of the {@code /hunted gamemode} command tree which contains all commands relating to game modes within Hunted.
+ *
+ * @see HuntedGameMode
+ */
 public class GameModeCommand implements AbstractHuntedCommand
 {
     @Override
     public LiteralArgumentBuilder<CommandSourceStack> createCommand()
     {
         LiteralArgumentBuilder<CommandSourceStack> rootCommand = Commands.literal("gamemode");
+
+        // Allows for selecting and changing the gamemode that will be used in future games.
         rootCommand.then(Commands.literal("select").then(Commands.argument("gameMode", GameModeArgumentType.huntedGameMode())
-                        .executes(GameModeCommand::updateSelectedGameMode)));
+                .executes(GameModeCommand::updateSelectedGameMode)));
+
+        // List all game modes that are registered with Hunted and available for playing.
         rootCommand.then(Commands.literal("list").executes(GameModeCommand::listAvailableGameModes));
 
         return rootCommand;
@@ -33,11 +42,13 @@ public class GameModeCommand implements AbstractHuntedCommand
 
     private static int updateSelectedGameMode(CommandContext<CommandSourceStack> commandContext)
     {
+        // The newly selected game mode from the passed argument and update the match settings
         HuntedGameMode newGameMode = commandContext.getArgument("gameMode", HuntedGameMode.class);
 
         GameManager gameManager = HuntedPlugin.getInstance().getGameManager();
         gameManager.getMatchSettings().selectedGameMode.setValue(newGameMode);
 
+        // Notify the command sender executed the command that the game mode has been updated.
         Component selectedGameModeMessage = Component.text("Selected Game Mode: ", NamedTextColor.GREEN)
                 .append(Component.text(newGameMode.getDisplayName(), NamedTextColor.GOLD));
 
@@ -51,6 +62,7 @@ public class GameModeCommand implements AbstractHuntedCommand
         Map<String, ?> registeredGameModes = GameModeRegistry.getRegisteredGameModes();
         CommandSender sender = commandContext.getSource().getSender();
 
+        // Nothing to display if there are (somehow?) no registered game modes.
         if (registeredGameModes.isEmpty())
         {
             sender.sendMessage(Component.text("No game modes are available. Something is probably bugged...").color(NamedTextColor.RED));
@@ -59,6 +71,7 @@ public class GameModeCommand implements AbstractHuntedCommand
 
         sender.sendMessage(Component.text("Available Game Modes:").color(NamedTextColor.GREEN));
 
+        // Iterate through all games within the game mode registry and show them to the command sender, displaying its ID, display name and description.
         for (String gameModeID : registeredGameModes.keySet())
         {
             // Create a temporary instance of the game mode so that we can get the display name.

@@ -3,6 +3,7 @@ package me.ayydxn.hunted;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import me.ayydxn.hunted.commands.GlobalHuntedCommand;
 import me.ayydxn.hunted.game.GameManager;
+import me.ayydxn.hunted.game.GameModeProvider;
 import me.ayydxn.hunted.game.GameModeRegistry;
 import me.ayydxn.hunted.game.custom.mode.ClassicGameMode;
 import me.ayydxn.hunted.game.world.GameWorld;
@@ -17,6 +18,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
+/**
+ * Main plugin entrypoint for Hunted.
+ */
 public final class HuntedPlugin extends JavaPlugin
 {
     public static HuntedPlugin INSTANCE;
@@ -24,7 +28,6 @@ public final class HuntedPlugin extends JavaPlugin
     public static final Logger LOGGER = (Logger) LogManager.getLogger("Hunted");
 
     private GameManager gameManager;
-    private Path gameMapsFolder;
 
     @Override
     public void onEnable()
@@ -33,7 +36,6 @@ public final class HuntedPlugin extends JavaPlugin
 
         LOGGER.info("Initializing Hunted... (Version: {})", this.getPluginMeta().getVersion());
 
-        this.createGameMapsFolder();
         this.registerGameModes();
 
         this.gameManager = new GameManager(this);
@@ -51,23 +53,9 @@ public final class HuntedPlugin extends JavaPlugin
         INSTANCE = null;
     }
 
-    private void createGameMapsFolder()
-    {
-        // Creates Hunted's data folder if it doesn't already exist.
-        this.getDataFolder().mkdirs();
-
-        this.gameMapsFolder = Path.of(new File(this.getDataFolder(), "gameMaps").toURI());
-
-        try
-        {
-            Files.createDirectory(this.gameMapsFolder);
-        }
-        catch (IOException exception)
-        {
-            LOGGER.error(exception);
-        }
-    }
-
+    /**
+     * Registers all the default game modes that come with Hunted.
+     */
     private void registerGameModes()
     {
         GameModeRegistry.register("classic", ClassicGameMode::new);
@@ -79,8 +67,8 @@ public final class HuntedPlugin extends JavaPlugin
     /**
      * Returns the instance of Hunted for the currently running server instance.
      *
-     * @throws IllegalStateException If an instance of Hunted isn't available
      * @return The current instance of Hunted
+     * @throws IllegalStateException If an instance of Hunted isn't available
      */
     public static HuntedPlugin getInstance()
     {
@@ -98,15 +86,5 @@ public final class HuntedPlugin extends JavaPlugin
     public GameManager getGameManager()
     {
         return this.gameManager;
-    }
-
-    /**
-     * Returns the path to the folder in which Hunted temporarily stores the world that a match is being played on.
-     *
-     * @return The path to the game maps folder.
-     */
-    public Path getGameMapsFolder()
-    {
-        return this.gameMapsFolder;
     }
 }

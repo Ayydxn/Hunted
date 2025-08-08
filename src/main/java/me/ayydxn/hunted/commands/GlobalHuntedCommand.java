@@ -10,6 +10,11 @@ import me.ayydxn.hunted.commands.game.StopGameCommand;
 import me.ayydxn.hunted.commands.teams.TeamsCommand;
 import me.ayydxn.hunted.game.GameManager;
 
+/**
+ * The root command for Hunted's command interface.
+ * <p>
+ * This is the top-level command by then which all commands used to interact with and configure Hunted are then accessed.
+ */
 public class GlobalHuntedCommand implements AbstractHuntedCommand
 {
     private final GameManager gameManager;
@@ -27,7 +32,6 @@ public class GlobalHuntedCommand implements AbstractHuntedCommand
         rootCommand.then(new StopGameCommand(this.gameManager).createCommand());
         rootCommand.then(new TeamsCommand().createCommand());
         rootCommand.then(new GameModeCommand().createCommand());
-
 
         return rootCommand;
     }

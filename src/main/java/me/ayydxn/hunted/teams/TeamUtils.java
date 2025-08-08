@@ -8,10 +8,16 @@ import org.bukkit.entity.Player;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * A class which contains utility functions relating to the available {@link Teams}
+ */
 public class TeamUtils
 {
     /**
      * Returns a stylized component of all the members within a team.
+     *
+     * @param team The team to list the members of
+     * @return A stylized component message of all the team's members
      */
     public static Component getTeamMembersText(Teams team)
     {

@@ -9,6 +9,7 @@ import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSele
 import me.ayydxn.hunted.commands.arguments.TeamArgumentType;
 import me.ayydxn.hunted.commands.arguments.TeamActionArgumentType;
 import me.ayydxn.hunted.commands.base.AbstractHuntedCommand;
+import me.ayydxn.hunted.teams.HuntedTeam;
 import me.ayydxn.hunted.teams.TeamActions;
 import me.ayydxn.hunted.teams.TeamUtils;
 import me.ayydxn.hunted.teams.Teams;
@@ -18,13 +19,22 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 
+/**
+ * The root of the {@code /hunted teams} command tree which contains all team management related commands.
+ *
+ * @see HuntedTeam
+ * @see Teams
+ */
 public class TeamsCommand implements AbstractHuntedCommand
 {
-    @SuppressWarnings("UnstableApiUsage")
     @Override
     public LiteralArgumentBuilder<CommandSourceStack> createCommand()
     {
         LiteralArgumentBuilder<CommandSourceStack> rootCommand = Commands.literal("teams");
+
+        // Performs a given team actions on a given team.
+        // This setup ensures that whenever new team actions are added, we don't have to come back here
+        // and add a new branch to the command tree for that new action.
         rootCommand.then(Commands.argument("targetTeam", TeamArgumentType.huntedTeam())
                 .then(Commands.argument("action", TeamActionArgumentType.teamAction())
                         .then(Commands.argument("targetPlayers", ArgumentTypes.players()).executes(context ->
@@ -42,6 +52,7 @@ public class TeamsCommand implements AbstractHuntedCommand
                             return Command.SINGLE_SUCCESS;
                         }))));
 
+        // Simply sends a formatted message to the command sender which lists all the current members.
         rootCommand.then(Commands.literal("list").executes(context ->
         {
             for (Teams team : Teams.values())

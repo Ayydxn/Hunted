@@ -12,7 +12,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-public final class BiomeUtils
+/**
+ * A class which contains utility functions to relating to {@link World}s.
+ */
+public final class WorldUtils
 {
     /**
      * Asynchronously scans the biomes in a radius around the world's spawn point, sampling at the given horizontal step interval without loading any chunks.

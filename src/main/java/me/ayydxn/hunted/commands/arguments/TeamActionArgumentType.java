@@ -13,12 +13,20 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
 
-public class TeamActionArgumentType implements CustomArgumentType<TeamActions, String>
+/**
+ * An {@link ArgumentType} implementation which allows us to use {@link TeamActions} in commands as arguments.
+ */
+public class TeamActionArgumentType implements CustomArgumentType<@NotNull TeamActions, @NotNull String>
 {
     private TeamActionArgumentType()
     {
     }
 
+    /**
+     * Creates and returns a new instance of this class.
+     *
+     * @return A new instance of {@link TeamActionArgumentType}
+     */
     public static TeamActionArgumentType teamAction()
     {
         return new TeamActionArgumentType();

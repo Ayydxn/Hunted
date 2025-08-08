@@ -26,10 +26,16 @@ public class HuntedGameState
     private final Set<UUID> spectators = Sets.newHashSet();
     private MatchState matchState = MatchState.ENDED;
 
+    /**
+     * Called every time the associated game mode ticks.
+     */
     public void onTick()
     {
     }
 
+    /**
+     * Resets the game state back to an empty, default state.
+     */
     public void reset()
     {
         this.survivors.clear();
@@ -39,6 +45,7 @@ public class HuntedGameState
         this.matchState = MatchState.ENDED;
     }
 
+    @Deprecated(forRemoval = true)
     public void addPlayer(Player player, Teams team)
     {
         String playerName = player.getName();
@@ -70,6 +77,7 @@ public class HuntedGameState
         }
     }
 
+    @Deprecated(forRemoval = true)
     public void removePlayer(Player player, Teams team)
     {
         String playerName = player.getName();
@@ -101,6 +109,12 @@ public class HuntedGameState
         }
     }
 
+    /**
+     * Returns the UUIDs of the player in the specified team.
+     *
+     * @param team The target team
+     * @return The UUIDs of all players in the team
+     */
     public Set<UUID> getPlayersInTeam(Teams team)
     {
         return switch (team)
@@ -112,11 +126,21 @@ public class HuntedGameState
         };
     }
 
-    public MatchState getGameStage()
+    /**
+     * Returns the state of the currently active match.
+     *
+     * @return The currently active match's state
+     */
+    public MatchState getMatchState()
     {
         return this.matchState;
     }
 
+    /**
+     * Updates the state of currently active match
+     *
+     * @param newMatchState The active match's new state
+     */
     public void setGameStage(MatchState newMatchState)
     {
         this.matchState = newMatchState;

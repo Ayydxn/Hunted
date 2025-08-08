@@ -17,6 +17,9 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.command.CommandSender;
 
+/**
+ * The command responsible for starting a game of Hunted.
+ */
 public class StartGameCommand implements AbstractHuntedCommand
 {
     private final GameManager gameManager;
@@ -30,7 +33,11 @@ public class StartGameCommand implements AbstractHuntedCommand
     public LiteralArgumentBuilder<CommandSourceStack> createCommand()
     {
         LiteralArgumentBuilder<CommandSourceStack> rootCommand = Commands.literal("start");
+
+        // Displays a confirmation message so that the user can ensure that the game is configured correctly before starting it.
         rootCommand.executes(context -> StartGameCommand.sendConfirmationMessage(context, this.gameManager));
+
+        // Actually starts the game.
         rootCommand.then(Commands.argument("confirm", StringArgumentType.word())
                 .executes(context -> StartGameCommand.startGame(context, this.gameManager)));
 
@@ -49,6 +56,7 @@ public class StartGameCommand implements AbstractHuntedCommand
 
         StartGameCommand.displayMatchSettings(matchSettings, sender);
 
+        // Display all the members within each team.
         for (Teams team : Teams.values())
         {
             if (team == Teams.UNKNOWN)
@@ -71,12 +79,14 @@ public class StartGameCommand implements AbstractHuntedCommand
         CommandSender sender = context.getSource().getSender();
         HuntedMatchSettings matchSettings = gameManager.getMatchSettings();
 
+        // Check and make sure the user actually wants to start the game.
         if (!context.getArgument("confirm", String.class).equals("confirm"))
         {
             sender.sendMessage(Component.text("Did you mean to run \"/hunted start confirm\"?", NamedTextColor.GOLD));
             return -1;
         }
 
+        // To prevent players from starting and running multiple games at the same time.
         if (gameManager.getCurrentMatchState() == MatchState.STARTING)
         {
             sender.sendMessage(Component.text("You cannot start a match of Minecraft Manhunt while one is already starting!", NamedTextColor.RED));
@@ -89,6 +99,7 @@ public class StartGameCommand implements AbstractHuntedCommand
             return -1;
         }
 
+        // Actually start the game
         gameManager.startGame(matchSettings.selectedGameMode.getValue());
 
         return Command.SINGLE_SUCCESS;

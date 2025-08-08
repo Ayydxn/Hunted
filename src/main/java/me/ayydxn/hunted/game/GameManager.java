@@ -1,25 +1,19 @@
 package me.ayydxn.hunted.game;
 
-import com.google.common.collect.ImmutableList;
 import me.ayydxn.hunted.HuntedPlugin;
 import me.ayydxn.hunted.game.config.HuntedMatchSettings;
 import me.ayydxn.hunted.game.world.GameWorld;
 import me.ayydxn.hunted.tasks.GameTickTask;
 import me.ayydxn.hunted.teams.TeamManager;
-import me.ayydxn.hunted.teams.Teams;
 import me.ayydxn.hunted.util.ServerUtils;
-import me.ayydxn.hunted.world.BiomeUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.minecraft.util.parsing.packrat.NamedRule;
-import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.block.Biome;
 
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ *
+ */
 public class GameManager
 {
     private final HuntedPlugin plugin;

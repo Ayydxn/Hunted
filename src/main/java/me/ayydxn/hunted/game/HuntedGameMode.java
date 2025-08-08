@@ -60,7 +60,7 @@ public abstract class HuntedGameMode implements Listener
     }
 
     /**
-     * Called every tick while the game is active.
+     * Called every time the game ticks.
      */
     public void onTick()
     {
@@ -95,12 +95,16 @@ public abstract class HuntedGameMode implements Listener
     public abstract void onPlayerLeave(Player player);
 
     /**
-     * @return Returns the name of the game mode as it is displayed in-game.
+     * Returns the in-game display name of this game mode.
+     *
+     * @return Returns the game mode's in-game display name.
      */
     public abstract String getDisplayName();
 
     /**
-     * @return Returns the description of the game mode.
+     * Returns the description of this game mode.
+     *
+     * @return Returns game mode's description.
      */
     public abstract String getDescription();
 
@@ -112,13 +116,13 @@ public abstract class HuntedGameMode implements Listener
                 Component.text(String.format("You cannot join while a game of Hunted is %s! Please wait until the game has %s.", presentTenseGameState, pastTenseGameState))
                         .color(NamedTextColor.RED);
 
-        if (this.gameState.getGameStage() == MatchState.STARTING)
+        if (this.gameState.getMatchState() == MatchState.STARTING)
         {
             playerConnectionValidateLoginEvent.kickMessage(disconnectComponent.apply("starting", "started"));
             return;
         }
 
-        if (this.gameState.getGameStage() == MatchState.ENDING)
+        if (this.gameState.getMatchState() == MatchState.ENDING)
         {
             playerConnectionValidateLoginEvent.kickMessage(disconnectComponent.apply("ending", "ended"));
             return;
@@ -130,14 +134,14 @@ public abstract class HuntedGameMode implements Listener
     @EventHandler
     private void onPlayerJoinImpl(PlayerJoinEvent playerJoinEvent)
     {
-        if (this.gameState.getGameStage() == MatchState.ACTIVE)
+        if (this.gameState.getMatchState() == MatchState.ACTIVE)
             this.onPlayerJoin(playerJoinEvent.getPlayer());
     }
 
     @EventHandler
     private void onPlayerLeaveImpl(PlayerQuitEvent playerQuitEvent)
     {
-        if (this.gameState.getGameStage() == MatchState.ACTIVE)
+        if (this.gameState.getMatchState() == MatchState.ACTIVE)
             this.onPlayerLeave(playerQuitEvent.getPlayer());
     }
 }
