@@ -173,4 +173,23 @@ public class GameWorld
 
         return newWorld;
     }
+
+    /**
+     * Returns the {@link World Bukkit world} from the corresponding {@link LoadedMultiverseWorld Multiverse world} based on the specified environment.
+     *
+     * @param environment The world environment to get
+     * @return The Bukkit world of the Multiverse world for that environment
+     * @throws NullPointerException If (somehow?) there is no Bukkit world for the Multiverse world
+     * @throws IllegalArgumentException If an unsupported {@link World.Environment} enumeration was used.
+     */
+    public World getBukkitWorld(World.Environment environment)
+    {
+        return switch (environment)
+        {
+            case NORMAL -> this.overworldWorld.getBukkitWorld().getOrElseThrow(NullPointerException::new);
+            case NETHER -> this.netherWorld.getBukkitWorld().getOrElseThrow(NullPointerException::new);
+            case THE_END -> this.theEndWorld.getBukkitWorld().getOrElseThrow(NullPointerException::new);
+            default -> throw new IllegalArgumentException(String.format("Cannot get Bukkit world for environment '%s'!", environment.name()));
+        };
+    }
 }

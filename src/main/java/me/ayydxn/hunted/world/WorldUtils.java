@@ -1,8 +1,8 @@
 package me.ayydxn.hunted.world;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.google.common.collect.*;
 import me.ayydxn.hunted.HuntedPlugin;
+import net.minecraft.world.level.biome.Biomes;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
@@ -73,5 +73,26 @@ public final class WorldUtils
 
             return biomeLocations;
         });
+    }
+
+    /**
+     * Returns all currently existing ocean biomes in the game.
+     *
+     * @return All existing ocean biomes
+     */
+    public static ImmutableSet<Biome> getAllOceanBiomes()
+    {
+        return ImmutableSet.of(Biome.OCEAN, Biome.COLD_OCEAN, Biome.DEEP_COLD_OCEAN, Biome.DEEP_OCEAN, Biome.DEEP_LUKEWARM_OCEAN, Biome.DEEP_FROZEN_OCEAN,
+                Biome.FROZEN_OCEAN, Biome.LUKEWARM_OCEAN, Biome.WARM_OCEAN);
+    }
+
+    /**
+     * Returns all currently existing cave biomes in the game.
+     *
+     * @return All existing cave biomes
+     */
+    public static ImmutableSet<Biome> getAllCaveBiomes()
+    {
+        return ImmutableSet.of(Biome.DEEP_DARK, Biome.LUSH_CAVES, Biome.DRIPSTONE_CAVES);
     }
 }
