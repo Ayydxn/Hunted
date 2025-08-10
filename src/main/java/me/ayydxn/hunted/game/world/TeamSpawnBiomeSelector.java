@@ -1,6 +1,7 @@
 package me.ayydxn.hunted.game.world;
 
 import me.ayydxn.hunted.HuntedPlugin;
+import me.ayydxn.hunted.world.LocationSafetyCache;
 import me.ayydxn.hunted.world.WorldUtils;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -156,7 +157,8 @@ public class TeamSpawnBiomeSelector
     }
 
     /**
-     * Selects a random location from the provided list of locations.
+     * Selects a random, safe location from the provided list of locations.
+     * "Safe" meaning that the player can be teleported there without dying in any way such as fall damage or suffocation.
      *
      * @param locations list of available locations
      * @param random    the random number generator to use
@@ -164,7 +166,13 @@ public class TeamSpawnBiomeSelector
      */
     private static Location selectRandomLocation(List<Location> locations, ThreadLocalRandom random)
     {
-        return locations.get(random.nextInt(locations.size()));
+        Location randomLocation = locations.get(random.nextInt(locations.size()));
+
+        // If the random location we got isn't safe, recurse the function and try again.
+        if (!LocationSafetyCache.isLocationSafe(randomLocation))
+            return TeamSpawnBiomeSelector.selectRandomLocation(locations, random);
+
+        return randomLocation;
     }
 
     /**

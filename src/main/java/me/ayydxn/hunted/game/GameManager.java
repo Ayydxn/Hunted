@@ -5,7 +5,9 @@ import me.ayydxn.hunted.game.config.HuntedMatchSettings;
 import me.ayydxn.hunted.game.world.GameWorld;
 import me.ayydxn.hunted.game.world.TeamSpawnBiomeSelector;
 import me.ayydxn.hunted.teams.TeamManager;
+import me.ayydxn.hunted.teams.Teams;
 import me.ayydxn.hunted.util.ServerUtils;
+import me.ayydxn.hunted.world.LocationSafetyCache;
 import me.ayydxn.hunted.world.WorldUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -13,12 +15,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
+import org.bukkit.entity.Player;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Responsible for managing the lifecycle and state of Hunted games.
@@ -98,9 +102,9 @@ public class GameManager
     }
 
     /**
-    * Performs one tick of the currently active game every 100 ticks (5 seconds).
-    * What happens here is usually handled by the {@link HuntedGameMode} being used.
-    */
+     * Performs one tick of the currently active game every 100 ticks (5 seconds).
+     * What happens here is usually handled by the {@link HuntedGameMode} being used.
+     */
     public void tickGame()
     {
         this.activeGameMode.onTick();
@@ -132,6 +136,8 @@ public class GameManager
             this.activeGameWorld.unload();
             this.activeGameWorld = null;
         }
+
+        LocationSafetyCache.clear();
 
         synchronized (this.stateLock)
         {
@@ -211,9 +217,11 @@ public class GameManager
                 this.initializationState = GameInitializationState.PREPARING_PLAYERS;
             }
 
+            this.transportPlayersToGameWorld(biomeSelectionResult);
+
             // TODO: Perform the following when preparing to start a new game
-            // - Transport all players to said world
-            // - Restrict all player movement
+            // - Transport all players to said world (Done) // STILL NEED TO TEST THIS!!!!!!!!!
+            // - Restrict all player movement (Done)
             // - Start a countdown
 
             synchronized (this.stateLock)
@@ -222,9 +230,51 @@ public class GameManager
             }
 
             // TODO: Perform the following once the countdown ends and the game begins (X = Completed):
-            // - Unrestrict all player movement
+            // - Unrestrict all player movement (Done)
             // - Pass all control to the game mode so that it can do whatever other setup it needs to so that it can be played properly.
+
+            synchronized (this.stateLock)
+            {
+                this.initializationState = GameInitializationState.STARTED;
+            }
         });
+    }
+
+    /**
+     * Teleports teams to their randomly selected spawns from the spawn biome selection process.
+     * Spectators are left with either team at random.
+     */
+    private void transportPlayersToGameWorld(TeamSpawnBiomeSelector.BiomeSelectionResult biomeSelectionResult)
+    {
+        List<Player> hunters = Teams.HUNTERS.getHandle().getMembers();
+        List<Player> survivors = Teams.SURVIVORS.getHandle().getMembers();
+        List<Player> spectators = Teams.SURVIVORS.getHandle().getMembers();
+        ThreadLocalRandom threadLocalRandom = ThreadLocalRandom.current();
+        Location hunterSpawnLocation = biomeSelectionResult.hunterSpawnLocation();
+        Location survivorSpawnLocation = biomeSelectionResult.survivorSpawnLocation();
+
+        // Add an offset to the spawn locations so that players don't all spawn on the same block.
+        // This is also done for the survivors, but not the spectators.
+        this.teleportPlayersWithRandomOffset(hunters, hunterSpawnLocation, threadLocalRandom);
+        this.teleportPlayersWithRandomOffset(survivors, survivorSpawnLocation, threadLocalRandom);
+
+        // Randomly teleport spectators to either team with no random offset
+        for (Player spectator : spectators)
+            this.activeGameWorld.teleportPlayer(spectator, threadLocalRandom.nextBoolean() ? hunterSpawnLocation : survivorSpawnLocation);
+    }
+
+    private void teleportPlayersWithRandomOffset(List<Player> players, Location baseLocation, ThreadLocalRandom random)
+    {
+        // (Ayydxn) Maybe make this configurable?
+        int maxOffset = 15;
+
+        for (Player player : players)
+        {
+            double offset = Math.floor(random.nextDouble(maxOffset)); // Each player will have a different offset
+            Location finalLocation = baseLocation.add(offset + 0.5d, 0.0d, offset + 0.5d); // Add 0.5 so we're in the center of the block
+
+            this.activeGameWorld.teleportPlayer(player, finalLocation);
+        }
     }
 
     private Void onInitializationError(Throwable throwable)
@@ -283,5 +333,10 @@ public class GameManager
     public MatchState getCurrentMatchState()
     {
         return this.currentMatchState;
+    }
+
+    public GameInitializationState getInitializationState()
+    {
+        return this.initializationState;
     }
 }

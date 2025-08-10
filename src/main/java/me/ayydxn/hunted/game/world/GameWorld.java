@@ -120,7 +120,7 @@ public class GameWorld
     public void teleportPlayer(Player player, Location destination)
     {
         this.multiverseCoreApi.getSafetyTeleporter().to(destination)
-                .checkSafety(true)
+                .checkSafety(false)
                 .teleportSingle(player)
                 .onFailureCount(teleportFailureReasonMap ->
                 {
@@ -132,7 +132,7 @@ public class GameWorld
     /**
      * Deletes all the worlds off the disk.
      * <p>
-     * This function is called during server shutdown when iterating the world deletion queue and be overridden to allow for custom deletion behavior.
+     * This function is called during server shutdown when iterating the world deletion queue and can be overridden to allow for custom deletion behavior.
      */
     protected void delete()
     {

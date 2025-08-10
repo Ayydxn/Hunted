@@ -7,7 +7,9 @@ import me.ayydxn.hunted.game.GameModeProvider;
 import me.ayydxn.hunted.game.GameModeRegistry;
 import me.ayydxn.hunted.game.custom.mode.ClassicGameMode;
 import me.ayydxn.hunted.game.world.GameWorld;
+import me.ayydxn.hunted.listeners.GlobalGameListeners;
 import me.ayydxn.hunted.teams.TeamManager;
+import me.ayydxn.hunted.world.LocationSafetyCache;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Logger;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -40,6 +42,8 @@ public final class HuntedPlugin extends JavaPlugin
 
         this.gameManager = new GameManager(this);
 
+        this.getServer().getPluginManager().registerEvents(new GlobalGameListeners(this.gameManager), this);
+
         this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> commands.registrar()
                 .register(new GlobalHuntedCommand(this.gameManager).createCommand().build()));
     }
@@ -47,8 +51,10 @@ public final class HuntedPlugin extends JavaPlugin
     @Override
     public void onDisable()
     {
-        this.gameManager.getTeamManager().clearTeams();
         GameWorld.clearWorldDeletionQueue();
+        LocationSafetyCache.clear();
+
+        this.gameManager.getTeamManager().clearTeams();
 
         INSTANCE = null;
     }
