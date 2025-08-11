@@ -3,22 +3,14 @@ package me.ayydxn.hunted;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import me.ayydxn.hunted.commands.GlobalHuntedCommand;
 import me.ayydxn.hunted.game.GameManager;
-import me.ayydxn.hunted.game.GameModeProvider;
 import me.ayydxn.hunted.game.GameModeRegistry;
 import me.ayydxn.hunted.game.custom.mode.ClassicGameMode;
 import me.ayydxn.hunted.game.world.GameWorld;
 import me.ayydxn.hunted.listeners.GlobalGameListeners;
-import me.ayydxn.hunted.teams.TeamManager;
-import me.ayydxn.hunted.world.LocationSafetyCache;
+import me.ayydxn.hunted.util.LocationSafetyCache;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.Logger;
 import org.bukkit.plugin.java.JavaPlugin;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.UUID;
 
 /**
  * Main plugin entrypoint for Hunted.

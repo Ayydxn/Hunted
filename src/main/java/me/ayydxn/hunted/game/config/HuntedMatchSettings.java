@@ -5,7 +5,7 @@ import me.ayydxn.hunted.HuntedPlugin;
 import me.ayydxn.hunted.game.GameModeRegistry;
 import me.ayydxn.hunted.game.HuntedGameMode;
 import me.ayydxn.hunted.game.custom.mode.ClassicGameMode;
-import me.ayydxn.hunted.world.WorldUtils;
+import me.ayydxn.hunted.util.WorldUtils;
 import org.bukkit.block.Biome;
 
 /**

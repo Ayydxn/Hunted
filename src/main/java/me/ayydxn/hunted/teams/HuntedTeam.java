@@ -73,6 +73,11 @@ public class HuntedTeam
         this.players.clear();
     }
 
+    public boolean isPlayerAMember(Player player)
+    {
+        return this.players.contains(player);
+    }
+
     /**
      * Creates and configures the Bukkit scoreboard team associated with this instance.
      * <p>

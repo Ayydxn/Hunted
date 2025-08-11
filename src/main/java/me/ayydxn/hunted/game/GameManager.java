@@ -1,14 +1,21 @@
 package me.ayydxn.hunted.game;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import io.papermc.paper.event.packet.PlayerChunkLoadEvent;
 import me.ayydxn.hunted.HuntedPlugin;
 import me.ayydxn.hunted.game.config.HuntedMatchSettings;
 import me.ayydxn.hunted.game.world.GameWorld;
 import me.ayydxn.hunted.game.world.TeamSpawnBiomeSelector;
+import me.ayydxn.hunted.tasks.GameTickTask;
+import me.ayydxn.hunted.tasks.countdown.GameStartCountdownTask;
 import me.ayydxn.hunted.teams.TeamManager;
 import me.ayydxn.hunted.teams.Teams;
+import me.ayydxn.hunted.util.LocationSafetyCache;
+import me.ayydxn.hunted.util.PlayerUtils;
 import me.ayydxn.hunted.util.ServerUtils;
-import me.ayydxn.hunted.world.LocationSafetyCache;
-import me.ayydxn.hunted.world.WorldUtils;
+import me.ayydxn.hunted.util.WorldUtils;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -16,6 +23,10 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Biome;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.mvplugins.multiverse.core.MultiverseCoreApi;
+import org.mvplugins.multiverse.core.teleportation.AsyncSafetyTeleporter;
 
 import java.util.List;
 import java.util.Map;
@@ -30,13 +41,15 @@ import java.util.concurrent.ThreadLocalRandom;
  * This class handles game initialization, updates, and cleanup through a state machine pattern that tracks initialization progress and ensures proper
  * sequencing of game setup operations.
  */
-public class GameManager
+public class GameManager implements Listener
 {
     private final HuntedPlugin plugin;
     private final TeamManager teamManager;
     private final Object stateLock = new Object();
 
     // Game state
+    private final Set<Player> readyPlayers = Sets.newConcurrentHashSet();
+    private final Map<Player, Integer> playerLoadedChunks = Maps.newHashMap();
     private HuntedMatchSettings matchSettings;
     private MatchState currentMatchState;
     private GameInitializationState initializationState;
@@ -44,6 +57,7 @@ public class GameManager
     // Game components
     private GameWorld activeGameWorld;
     private HuntedGameMode activeGameMode;
+    private GameTickTask gameTickTask;
 
     /**
      * Constructs a new {@link GameManager} with the specified instance of Hunted.
@@ -137,7 +151,18 @@ public class GameManager
             this.activeGameWorld = null;
         }
 
+        if (this.gameTickTask != null)
+            this.gameTickTask = null;
+
         LocationSafetyCache.clear();
+
+        // Teleport players back to the default server world
+        Bukkit.getScheduler().runTaskLater(this.plugin, () ->
+        {
+            for (Player onlinePlayer : Bukkit.getOnlinePlayers())
+                this.transportBackToMainWorld(onlinePlayer);
+
+        }, 100L);
 
         synchronized (this.stateLock)
         {
@@ -194,6 +219,8 @@ public class GameManager
             this.initializationState = GameInitializationState.SELECTING_SPAWN_BIOMES;
         }
 
+        HuntedPlugin.LOGGER.info("Determining team spawn biomes...");
+
         Set<Biome> disallowedSpawnBiomes = this.matchSettings.disallowedSpawnBiomes.getValue();
         World gameWorldBukkitHandle = this.activeGameWorld.getBukkitWorld(World.Environment.NORMAL);
 
@@ -218,25 +245,7 @@ public class GameManager
             }
 
             this.transportPlayersToGameWorld(biomeSelectionResult);
-
-            // TODO: Perform the following when preparing to start a new game
-            // - Transport all players to said world (Done) // STILL NEED TO TEST THIS!!!!!!!!!
-            // - Restrict all player movement (Done)
-            // - Start a countdown
-
-            synchronized (this.stateLock)
-            {
-                this.initializationState = GameInitializationState.STARTING_COUNTDOWN;
-            }
-
-            // TODO: Perform the following once the countdown ends and the game begins (X = Completed):
-            // - Unrestrict all player movement (Done)
-            // - Pass all control to the game mode so that it can do whatever other setup it needs to so that it can be played properly.
-
-            synchronized (this.stateLock)
-            {
-                this.initializationState = GameInitializationState.STARTED;
-            }
+            this.waitUntilAllPlayersAreReady();
         });
     }
 
@@ -246,6 +255,8 @@ public class GameManager
      */
     private void transportPlayersToGameWorld(TeamSpawnBiomeSelector.BiomeSelectionResult biomeSelectionResult)
     {
+        HuntedPlugin.LOGGER.info("Transporting players to game world...");
+
         List<Player> hunters = Teams.HUNTERS.getHandle().getMembers();
         List<Player> survivors = Teams.SURVIVORS.getHandle().getMembers();
         List<Player> spectators = Teams.SURVIVORS.getHandle().getMembers();
@@ -274,6 +285,60 @@ public class GameManager
             Location finalLocation = baseLocation.add(offset + 0.5d, 0.0d, offset + 0.5d); // Add 0.5 so we're in the center of the block
 
             this.activeGameWorld.teleportPlayer(player, finalLocation);
+        }
+    }
+
+    /**
+     * Waits until all players are ready before starting the countdown
+     *
+     * @see GameManager#onPlayerChunkLoad(PlayerChunkLoadEvent)
+     */
+    private void waitUntilAllPlayersAreReady()
+    {
+        Bukkit.getPluginManager().registerEvents(this, this.plugin);
+    }
+
+    private void startGameCountdown()
+    {
+        synchronized (this.stateLock)
+        {
+            this.initializationState = GameInitializationState.STARTING_COUNTDOWN;
+        }
+
+        HuntedPlugin.LOGGER.info("Starting game countdown...");
+
+        GameStartCountdownTask gameStartCountdownTask = new GameStartCountdownTask(this, this::onGameCountdownComplete);
+
+        Bukkit.getScheduler().runTaskTimer(this.plugin, gameStartCountdownTask, 0L, 20L);
+    }
+
+    private void onGameCountdownComplete()
+    {
+        synchronized (this.stateLock)
+        {
+            if (this.initializationState != GameInitializationState.STARTING_COUNTDOWN)
+            {
+                HuntedPlugin.LOGGER.info("Game started countdown ended in an unexpected state ({})", this.initializationState);
+                return;
+            }
+
+            this.initializationState = GameInitializationState.COMPLETE;
+            this.currentMatchState = MatchState.ACTIVE;
+
+            var activePlayers = ImmutableList.<Player>builder()
+                    .addAll(Teams.HUNTERS.getHandle().getMembers())
+                    .addAll(Teams.SURVIVORS.getHandle().getMembers())
+                    .build();
+
+            for (Player player : activePlayers)
+                PlayerUtils.allowPlayerFlight(player, false);
+
+            HuntedPlugin.LOGGER.info("Game initialization successfully completed! Beginning active gameplay...");
+
+            this.gameTickTask = new GameTickTask(this);
+            Bukkit.getScheduler().runTaskTimer(this.plugin, gameTickTask, 0L, 100L);
+
+            this.activeGameMode.onStart();
         }
     }
 
@@ -316,8 +381,76 @@ public class GameManager
             this.activeGameMode = null;
         }
 
+        if (this.gameTickTask != null)
+            this.gameTickTask = null;
+
         this.teamManager.clearTeams();
         this.matchSettings = HuntedMatchSettings.defaults();
+    }
+
+    /**
+     * Teleports a given player back to spawn location of the main server world (aka the world that the server makes when you run it and there is no world)
+     *
+     * @param player The player to teleport
+     */
+    private void transportBackToMainWorld(Player player)
+    {
+        MultiverseCoreApi multiverseCoreApi = MultiverseCoreApi.get();
+        AsyncSafetyTeleporter safetyTeleporter = multiverseCoreApi.getSafetyTeleporter();
+        World mainWorld = Bukkit.getWorlds().getFirst(); // TODO: (Ayydxn) Make this configurable. Can't always assume it's the first world.
+        Location mainWorldSpawnLocation = mainWorld.getSpawnLocation();
+
+        safetyTeleporter.to(mainWorldSpawnLocation)
+                .checkSafety(false)
+                .teleportSingle(player)
+                .onFailureCount(teleportFailureReasonMap ->
+                {
+                    for (var entry : teleportFailureReasonMap.entrySet())
+                        HuntedPlugin.LOGGER.error("Failed to teleport player to {}: {}", mainWorldSpawnLocation, entry.getKey());
+                });
+    }
+
+    /**
+     * We use players loading chunks as a method of checking if they are ready or not.
+     * "Ready" meaning that they have fully loaded into the game world and can play the game.
+     * <p>
+     * Once all players are ready, we can start the countdown.
+     */
+    @EventHandler
+    public void onPlayerChunkLoad(PlayerChunkLoadEvent playerChunkLoadEvent)
+    {
+        if (this.initializationState !=  GameInitializationState.PREPARING_PLAYERS)
+            return;
+
+        if (playerChunkLoadEvent.getWorld() != this.activeGameWorld.getBukkitWorld(World.Environment.NORMAL))
+            return;
+
+        Player player = playerChunkLoadEvent.getPlayer();
+
+        ImmutableList<Player> players = ImmutableList.<Player>builder()
+                .addAll(Teams.HUNTERS.getHandle().getMembers())
+                .addAll(Teams.SURVIVORS.getHandle().getMembers())
+                .addAll(Teams.SPECTATORS.getHandle().getMembers())
+                .build();
+
+        if (!players.contains(player))
+            return;
+
+        int loadedChunkCount = this.playerLoadedChunks.merge(player, 1, Integer::sum);
+        int minChunksNeeded = 10; // Minimum number of chunks that a player needs to load to be considered ready.
+
+        if (loadedChunkCount >= minChunksNeeded)
+        {
+            this.readyPlayers.add(player);
+
+            if (this.readyPlayers.size() == this.playerLoadedChunks.size())
+            {
+                Bukkit.getScheduler().runTask(this.plugin, this::startGameCountdown);
+
+                // Don't need this event anymore, so we can unregister this class as a listener.
+                PlayerChunkLoadEvent.getHandlerList().unregister(this);
+            }
+        }
     }
 
     public TeamManager getTeamManager()

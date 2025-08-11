@@ -1,8 +1,8 @@
 package me.ayydxn.hunted.game.world;
 
 import me.ayydxn.hunted.HuntedPlugin;
-import me.ayydxn.hunted.world.LocationSafetyCache;
-import me.ayydxn.hunted.world.WorldUtils;
+import me.ayydxn.hunted.util.LocationSafetyCache;
+import me.ayydxn.hunted.util.WorldUtils;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Biome;

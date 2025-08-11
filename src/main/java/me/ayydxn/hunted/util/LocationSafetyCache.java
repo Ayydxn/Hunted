@@ -1,4 +1,4 @@
-package me.ayydxn.hunted.world;
+package me.ayydxn.hunted.util;
 
 import com.google.common.collect.Maps;
 import org.bukkit.Location;

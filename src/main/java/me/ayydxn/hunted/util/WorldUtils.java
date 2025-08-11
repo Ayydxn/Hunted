@@ -1,8 +1,7 @@
-package me.ayydxn.hunted.world;
+package me.ayydxn.hunted.util;
 
 import com.google.common.collect.*;
 import me.ayydxn.hunted.HuntedPlugin;
-import net.minecraft.world.level.biome.Biomes;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Biome;

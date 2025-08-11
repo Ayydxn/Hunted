@@ -3,6 +3,10 @@ package me.ayydxn.hunted.game.custom.mode;
 import me.ayydxn.hunted.HuntedPlugin;
 import me.ayydxn.hunted.game.HuntedGameMode;
 import me.ayydxn.hunted.game.HuntedGameState;
+import me.ayydxn.hunted.teams.Teams;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.title.Title;
 import org.bukkit.entity.Player;
 
 /**
@@ -19,9 +23,19 @@ public class ClassicGameMode extends HuntedGameMode
     }
 
     @Override
-    public void onTick()
+    public void onStart()
     {
-        super.onTick();
+        super.onStart();
+
+        Component huntersObjectiveMessage = Component.text("Objective: Kill all the survivors before they kill the Ender Dragon!", NamedTextColor.GOLD);
+        Component survivorsObjectiveMessage = Component.text("Objective: Run from the Hunters and kill the Ender Dragon!", NamedTextColor.GOLD);
+
+        // (Ayydxn) Probably better to refer to the game state instead?
+        for (Player hunter : Teams.HUNTERS.getHandle().getMembers())
+            hunter.sendActionBar(huntersObjectiveMessage);
+
+        for (Player survivor : Teams.SURVIVORS.getHandle().getMembers())
+            survivor.sendActionBar(survivorsObjectiveMessage);
     }
 
     @Override
